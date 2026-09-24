@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#1b1f18">
+  <title>Passée — Chasse au canard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-top">
+      <div id="hud-mode"></div>
+      <div id="compass"><div id="compass-strip"></div><div class="compass-needle"></div></div>
+      <div id="hud-score">0</div>
+    </div>
+    <div id="hud-map"></div>
+    <div id="hud-side"></div>
+    <div id="crosshair"><i></i></div>
+    <div id="hitmarker"></div>
+    <div id="feed"></div>
+    <div id="center-msg"></div>
+    <div id="float-msg"></div>
+    <div id="hint"></div>
+    <div class="hud-bl">
+      <div class="wind"><div id="wind-arrow">➤</div><span id="wind-speed"></span></div>
+      <div id="stance"></div>
+      <div id="tools"></div>
+      <div id="breath" class="gauge"><span>Souffle</span><div class="bar"><i></i></div></div>
+      <div id="stamina" class="gauge"><span>Endurance</span><div class="bar"><i></i></div></div>
+    </div>
+    <div class="hud-br">
+      <div id="ammo-name"></div>
+      <div id="ammo-shells"></div>
+      <div class="ammo-res"><span id="ammo-reserve"></span> en réserve</div>
+      <div id="ammo-state"></div>
+    </div>
+    <div id="bag-board" class="hidden"></div>
+  </div>
+  <div id="scope" class="hidden"><div class="scope-ring"></div><div class="reticle"></div></div>
+  <div id="binoc" class="hidden"><div class="binoc-mask"></div></div>
+
+  <!-- Contrôles tactiles -->
+  <div id="touch-ui" class="hidden">
+    <div id="look-zone"></div>
+    <div id="stick"><div id="stick-knob"></div></div>
+    <button data-btn="fire" class="tbtn fire">FEU</button>
+    <button data-btn="aim" class="tbtn aim">VISER</button>
+    <button data-btn="reload" class="tbtn reload">R</button>
+    <button data-btn="crouch" class="tbtn crouch">▼</button>
+    <button data-btn="jump" class="tbtn jump">⤒</button>
+    <button data-btn="call" class="tbtn call">📯</button>
+    <button data-btn="binoc" class="tbtn binoc">🔭</button>
+    <button data-btn="use" class="tbtn use">E</button>
+    <button data-btn="switch" class="tbtn switch">⇄</button>
+    <button data-btn="pause" class="tbtn pause">II</button>
+  </div>
+
+  <div id="menu-root"></div>
+  <div id="pause" class="hidden"></div>
+  <div id="loading" class="hidden"><div class="spinner"></div><p>Préparation du territoire…</p></div>
+  <noscript>Ce jeu nécessite JavaScript et WebGL.</noscript>
+
+  <script src="lib/three.min.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/ducks.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/weapons.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
