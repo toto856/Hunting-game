@@ -30,7 +30,7 @@ HG.tex = (() => {
     const S = 512, c = canvas(S, S), ctx = c.getContext('2d');
     const pal = {
       grass: [hexToRgb('#4a6a2a'), hexToRgb('#6e8a36'), hexToRgb('#3f5a22'), hexToRgb('#7d7a44')],
-      forest: [hexToRgb('#4d3b25'), hexToRgb('#6b5232'), hexToRgb('#3a5a24'), hexToRgb('#8a6a3a')],
+      forest: [hexToRgb('#5e4a30'), hexToRgb('#7d6240'), hexToRgb('#4a6a2c'), hexToRgb('#9a7a48')],
       marsh: [hexToRgb('#4c5c2a'), hexToRgb('#6e7a38'), hexToRgb('#3b4a1e'), hexToRgb('#5c5a3a')],
       rock: [hexToRgb('#6e6a62'), hexToRgb('#8a857a'), hexToRgb('#57534c'), hexToRgb('#9a958a')],
       snow: [hexToRgb('#e8ecf2'), hexToRgb('#f6f8fb'), hexToRgb('#d0d8e4'), hexToRgb('#ffffff')],
@@ -133,9 +133,9 @@ HG.tex = (() => {
   function grassBlade(kind = 'green') {
     const key = 'grass_' + kind; if (cache[key]) return cache[key];
     const W = 64, H = 128, c = canvas(W, H), ctx = c.getContext('2d'); ctx.clearRect(0, 0, W, H);
-    const cols = kind === 'dry' ? ['#a89a55', '#c2b46a', '#8f8248'] : kind === 'reed' ? ['#8a9a4a', '#a9b25f', '#6f7c38'] : ['#4f7a2a', '#6a9438', '#3e6420'];
+    const cols = kind === 'dry' ? ['#9c8f4e', '#b3a55c', '#7f7440'] : kind === 'reed' ? ['#7f8f44', '#9aa356', '#647032'] : ['#4a6e28', '#5f8532', '#3a5a1f'];
     for (let i = 0; i < 6; i++) {
-      const x0 = 8 + Math.random() * (W - 16), w = 2.5 + Math.random() * 3, h = H * (0.55 + Math.random() * 0.45), bend = (Math.random() - 0.5) * 30;
+      const x0 = 8 + Math.random() * (W - 16), w = 1.6 + Math.random() * 2, h = H * (0.55 + Math.random() * 0.45), bend = (Math.random() - 0.5) * 30;
       const grad = ctx.createLinearGradient(0, H, 0, H - h); grad.addColorStop(0, '#2a3f14'); grad.addColorStop(0.6, cols[i % 3]); grad.addColorStop(1, cols[(i + 1) % 3]);
       ctx.fillStyle = grad; ctx.beginPath(); ctx.moveTo(x0 - w, H); ctx.quadraticCurveTo(x0 + bend * 0.5, H - h * 0.5, x0 + bend, H - h); ctx.quadraticCurveTo(x0 + bend * 0.5 + w, H - h * 0.5, x0 + w, H); ctx.fill();
     }
@@ -202,5 +202,11 @@ HG.tex = (() => {
     fillNoise(ctx, S, S, (u, v) => { const e = 0.004; const h = (x, y) => tnoise(x, y, 12, 3); const dx = h(u + e, v) - h(u - e, v), dy = h(u, v + e) - h(u, v - e); return [128 + dx * 900, 128 + dy * 900, 255]; });
     const t = toTex(c, 8, false); return (cache.waterN = t);
   }
-  return { ground, bark, conifer, leaves, grassBlade, rock, fur, target, boarTarget, wood, cloth, camo, waterNormal };
+  function puff() {
+    if (cache.puff) return cache.puff;
+    const S = 128, c = canvas(S, S), ctx = c.getContext('2d'); const g = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2); g.addColorStop(0, 'rgba(255,255,255,0.9)'); g.addColorStop(0.4, 'rgba(255,255,255,0.45)'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+    for (let i = 0; i < 40; i++) { ctx.fillStyle = 'rgba(255,255,255,' + (0.05 + Math.random() * 0.15) + ')'; ctx.beginPath(); ctx.arc(S / 2 + (Math.random() - 0.5) * S * 0.6, S / 2 + (Math.random() - 0.5) * S * 0.6, 8 + Math.random() * 18, 0, 7); ctx.fill(); }
+    const t = toTex(c, 1); t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return (cache.puff = t);
+  }
+  return { puff, ground, bark, conifer, leaves, grassBlade, rock, fur, target, boarTarget, wood, cloth, camo, waterNormal };
 })();

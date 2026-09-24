@@ -4,7 +4,7 @@ HG.Game = class Game {
   constructor(canvas) {
     this.canvas = canvas; const S = HG.save.get(); this.save = S;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    this.renderer.outputEncoding = THREE.sRGBEncoding; this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.0; this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.outputEncoding = THREE.sRGBEncoding; this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.15; this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.applyQuality(S.options.quality);
     this.scene = new THREE.Scene(); this.baseFov = S.options.fov || 70; this.camera = new THREE.PerspectiveCamera(this.baseFov, 1, 0.08, 6000); this.scene.add(this.camera);
     this.ui = new HG.UI(this); this.fx = []; this.time = 0; this.running = false; this.paused = false; this.mode = null; this.clock = new THREE.Clock(); this.ctx = {};
@@ -81,7 +81,7 @@ HG.Game = class Game {
     this.renderer.render(this.scene, this.camera);
   }
   updateFx(dt) { for (const f of this.fx) { f.t += dt; if (f.still) continue; if (f.vel) { if (f.grav) f.vel.y -= 9.8 * dt; f.m.position.addScaledVector(f.vel, dt); } if (f.grow) f.m.scale.addScalar(f.grow * dt); if (f.m.material && f.m.material.opacity != null && f.m.isSprite) f.m.material.opacity = Math.max(0, 0.5 * (1 - f.t / f.life)); if (f.spin) { f.m.rotation.x += dt * 8; f.m.rotation.y += dt * 6; } } for (let i = this.fx.length - 1; i >= 0; i--) if (this.fx[i].t > this.fx[i].life) { this.scene.remove(this.fx[i].m); this.fx.splice(i, 1); } }
-  spawnPuff(pos, color, size) { const m = new THREE.Sprite(new THREE.SpriteMaterial({ color, transparent: true, opacity: 0.5, depthWrite: false })); m.scale.setScalar(size); m.position.copy(pos); this.scene.add(m); this.fx.push({ m, t: 0, life: 0.9, vel: new THREE.Vector3(0, 0.6, 0), grow: size * 1.5 }); }
+  spawnPuff(pos, color, size) { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: HG.tex.puff(), color, transparent: true, opacity: 0.5, depthWrite: false })); m.scale.setScalar(size); m.position.copy(pos); this.scene.add(m); this.fx.push({ m, t: 0, life: 0.9, vel: new THREE.Vector3(0, 0.6, 0), grow: size * 1.5 }); }
   // ================================================================ ACTIONS
   handleAction(a) {
     const k = a.key, P = this.player, Wp = this.weapons, A = HG.audio;

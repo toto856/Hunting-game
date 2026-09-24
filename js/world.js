@@ -174,14 +174,14 @@ HG.World = class World {
     const day = U.smoothstep(-0.12, 0.18, sd.y), dusk = Math.exp(-Math.pow((sd.y - 0.02) / 0.13, 2)), ov = this.weather.cloud * 0.8;
     const warm = new THREE.Color(1, 0.55, 0.3), noon = new THREE.Color(1, 0.97, 0.9);
     this.sun.color.copy(noon).lerp(warm, U.clamp(dusk * 1.2, 0, 1));
-    this.sun.intensity = day * (1 - ov * ov * 0.85) * 2.6 * U.clamp(sd.y * 3, 0.15, 1);
+    this.sun.intensity = day * (1 - ov * ov * 0.85) * 2.8 * U.clamp(0.35 + sd.y * 2.5, 0.35, 1);
     this.sun.visible = day > 0.02;
     this.moon.intensity = (1 - day) * 0.22 * (1 - ov * 0.8); this.moon.position.set(-sd.x * 100, Math.max(30, -sd.y * 100), -sd.z * 100);
     const zen = new THREE.Color(0.008, 0.012, 0.03).lerp(new THREE.Color(0.14, 0.33, 0.7), day), hor = new THREE.Color(0.03, 0.04, 0.07).lerp(new THREE.Color(0.7, 0.8, 0.9), day);
     hor.lerp(new THREE.Color(0.03, 0.032, 0.04).lerp(new THREE.Color(0.6, 0.62, 0.66), day), ov * ov);
     hor.r += 0.98 * dusk * 0.3 * (1 - ov); hor.g += 0.5 * dusk * 0.3 * (1 - ov); hor.b += 0.22 * dusk * 0.3 * (1 - ov);
-    this.hemi.color.copy(zen).multiplyScalar(1.4).lerp(new THREE.Color(0.5, 0.55, 0.65), ov * 0.5); this.hemi.groundColor.set(0x5a4a33).multiplyScalar(0.6 + day * 0.6);
-    this.hemi.intensity = 0.12 + day * (0.75 - ov * 0.2);
+    this.hemi.color.copy(zen).lerp(new THREE.Color(0.85, 0.88, 0.95), 0.55).lerp(new THREE.Color(0.5, 0.55, 0.65), ov * 0.5); this.hemi.groundColor.set(0x6a5a44).multiplyScalar(0.6 + day * 0.7);
+    this.hemi.intensity = 0.22 + day * (1.0 - ov * 0.25);
     const fogC = hor.clone().multiplyScalar(0.92 + this.weather.fog * 0.08);
     this.scene.fog.color.copy(fogC); this.skyUniforms.fogColor.value.copy(fogC);
     this.dayFactor = day; this.isNight = day < 0.35;
@@ -273,12 +273,12 @@ HG.World = class World {
     const conifGeo = new THREE.PlaneGeometry(1, 1); conifGeo.translate(0, 0.5, 0); // quad ancré en bas
     const leafGeo = new THREE.PlaneGeometry(1, 1);
     const specs = {
-      pine:   { trunkH: 14, trunkR: 0.32, bark: 'pine', tiers: [[0.45, 4.2], [0.58, 3.8], [0.7, 3.2], [0.82, 2.5], [0.93, 1.6]], conif: 'pine', tilt: -0.5 },
+      pine:   { trunkH: 14, trunkR: 0.26, bark: 'pine', tiers: [[0.45, 4.2], [0.58, 3.8], [0.7, 3.2], [0.82, 2.5], [0.93, 1.6]], conif: 'pine', tilt: -0.5 },
       spruce: { trunkH: 15, trunkR: 0.3, bark: 'spruce', tiers: [[0.18, 4.4], [0.3, 4.2], [0.42, 3.8], [0.54, 3.3], [0.66, 2.8], [0.78, 2.2], [0.9, 1.5], [0.98, 0.9]], conif: 'spruce', tilt: -0.7 },
       fir:    { trunkH: 12, trunkR: 0.3, bark: 'spruce', tiers: [[0.2, 3.8], [0.35, 3.6], [0.5, 3.2], [0.65, 2.7], [0.8, 2], [0.93, 1.2]], conif: 'fir', tilt: -0.35 },
-      oak:    { trunkH: 7, trunkR: 0.45, bark: 'oak', crown: { y: 0.75, rx: 5.5, ry: 4.2, n: 14, leaf: 'oak', size: 5.2 } },
-      beech:  { trunkH: 9, trunkR: 0.35, bark: 'beech', crown: { y: 0.7, rx: 4.5, ry: 4.8, n: 13, leaf: 'beech', size: 4.6 } },
-      birch:  { trunkH: 9, trunkR: 0.2, bark: 'birch', crown: { y: 0.65, rx: 2.8, ry: 4, n: 10, leaf: 'birch', size: 3.2 } },
+      oak:    { trunkH: 7, trunkR: 0.3, bark: 'oak', crown: { y: 0.75, rx: 5.5, ry: 4.2, n: 14, leaf: 'oak', size: 5.2 } },
+      beech:  { trunkH: 9, trunkR: 0.26, bark: 'beech', crown: { y: 0.7, rx: 4.5, ry: 4.8, n: 13, leaf: 'beech', size: 4.6 } },
+      birch:  { trunkH: 9, trunkR: 0.15, bark: 'birch', crown: { y: 0.65, rx: 2.8, ry: 4, n: 10, leaf: 'birch', size: 3.2 } },
       bush:   { trunkH: 0, crown: { y: 0.3, rx: 1.4, ry: 1.0, n: 6, leaf: 'bush', size: 1.9 } },
     };
     for (const type in byType) {
@@ -299,8 +299,8 @@ HG.World = class World {
           for (const [f, w] of sp.tiers) for (let q = 0; q < 4; q++) {
             const a = t.rot + q * Math.PI / 2 + (f * 7) % 1; const len = w * t.scale * (0.85 + U.hash2(i, q) * 0.3);
             dummy.position.set(t.x + Math.cos(a) * 0.15, t.y + H * f, t.z + Math.sin(a) * 0.15);
-            dummy.rotation.set(0, -a + Math.PI / 2, 0); dummy.rotateX(Math.PI / 2 + sp.tilt * 0.5); // quad couché vers l'extérieur
-            dummy.scale.set(len * 0.9, len, 1); dummy.updateMatrix(); im.setMatrixAt(i++, dummy.matrix);
+            dummy.rotation.set(0, -a + Math.PI / 2, 0); dummy.rotateX(0.62 - sp.tilt * 0.35); // quad incliné vers l'extérieur, visible de côté
+            dummy.scale.set(len * 1.1, len * 0.9, 1); dummy.updateMatrix(); im.setMatrixAt(i++, dummy.matrix);
           }
         }
         this.scene.add(im); this.vegMeshes.push(im);
@@ -348,14 +348,14 @@ HG.World = class World {
     const T = HG.tex, b = this.biome;
     const kind = b === 'plaine' ? 'dry' : b === 'marais' ? 'reed' : b === 'montagne' ? 'dry' : 'green';
     const geo = new THREE.BufferGeometry();
-    const w = 0.7, h = b === 'marais' ? 1.6 : b === 'plaine' ? 0.7 : 0.75;
+    const w = 0.55, h = b === 'marais' ? 1.5 : b === 'plaine' ? 0.6 : 0.62;
     const verts = [], uvs = [], idx = [];
     for (let k = 0; k < 3; k++) { const a = k * Math.PI / 3, c = Math.cos(a) * w / 2, s = Math.sin(a) * w / 2; const o = verts.length / 3; verts.push(-c, 0, -s, c, 0, s, c, h, s, -c, h, -s); uvs.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(o, o + 1, o + 2, o, o + 2, o + 3); }
     geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2)); geo.setIndex(idx); geo.computeVertexNormals();
     const p = geo.attributes.normal; for (let i = 0; i < p.count; i++) p.setXYZ(i, 0, 1, 0); // normales vers le haut : herbe éclairée comme le sol
     this.grassGeo = geo;
     this.grassMat = this.windShader(new THREE.MeshStandardMaterial({ map: T.grassBlade(kind), alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.9 }), 'grass');
-    this.grassChunks = new Map(); this.grassPool = []; this.chunkSize = 30; this.grassRadius = 3; this.grassPer = b === 'montagne' ? 500 : b === 'marais' ? 900 : 800;
+    this.grassChunks = new Map(); this.grassPool = []; this.chunkSize = 30; this.grassRadius = 3; this.grassPer = b === 'montagne' ? 600 : b === 'marais' ? 1000 : 1000;
   }
   updateGrass(px, pz) {
     const cs = this.chunkSize, ci = Math.floor(px / cs), cj = Math.floor(pz / cs), R = this.grassRadius;

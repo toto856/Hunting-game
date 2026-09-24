@@ -4,7 +4,7 @@ HG.Weapons = class Weapons {
   constructor(game) {
     this.game = game; this.save = HG.save.get(); this.cam = game.camera; this.world = game.world; this.player = game.player;
     this.slots = []; this.cur = 0; this.busy = 0; this.busyLabel = ''; this.projectiles = []; this.zoomIdx = 0; this.chamberEmpty = false; this.drawn = 0; this.rig = new THREE.Group(); this.cam.add(this.rig); this.raycaster = new THREE.Raycaster(); this.tracer = []; this.lastShotT = 0;
-    this.fireT = 0; this.shotsFired = 0; this.smokeMat = new THREE.SpriteMaterial({ color: 0xcfc8b8, transparent: true, opacity: 0.5, depthWrite: false }); this.flashMat = new THREE.SpriteMaterial({ color: 0xffd080, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
+    this.fireT = 0; this.shotsFired = 0; this.smokeMat = new THREE.SpriteMaterial({ map: HG.tex.puff(), color: 0xcfc8b8, transparent: true, opacity: 0.5, depthWrite: false }); this.flashMat = new THREE.SpriteMaterial({ map: HG.tex.puff(), color: 0xffd080, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
   }
   setLoadout(ids) {
     const D = HG.data, S = this.save; this.slots = [];
@@ -19,13 +19,13 @@ HG.Weapons = class Weapons {
   switchWeapon() { if (this.slots.length < 2 || this.busy > 0) return; this.cur = (this.cur + 1) % this.slots.length; this.busy = 0.7; this.busyLabel = 'Changement d\'arme'; this.show(); HG.audio.magIn(); }
   // ---------------------------------------------------------------- MODÈLES
   buildModel(s) {
-    const g = new THREE.Group(); const w = s.w; const wood = new THREE.MeshStandardMaterial({ map: HG.tex.wood(), roughness: 0.5, metalness: 0 }); const steel = new THREE.MeshStandardMaterial({ color: 0x2a2c30, roughness: 0.35, metalness: 0.8 }); const black = new THREE.MeshStandardMaterial({ color: 0x141416, roughness: 0.6, metalness: 0.3 });
-    const add = (geo, m, x, y, z, rx = 0, ry = 0, rz = 0) => { const mm = new THREE.Mesh(geo, m); mm.position.set(x, y, z); mm.rotation.set(rx, ry, rz); g.add(mm); return mm; };
+    const g = new THREE.Group(); const inner = new THREE.Group(); inner.position.set(0, 0, -0.42); inner.scale.setScalar(0.62); g.add(inner); const w = s.w; const wood = new THREE.MeshStandardMaterial({ map: HG.tex.wood(), roughness: 0.5, metalness: 0 }); const steel = new THREE.MeshStandardMaterial({ color: 0x2a2c30, roughness: 0.35, metalness: 0.8 }); const black = new THREE.MeshStandardMaterial({ color: 0x141416, roughness: 0.6, metalness: 0.3 });
+    const add = (geo, m, x, y, z, rx = 0, ry = 0, rz = 0) => { const mm = new THREE.Mesh(geo, m); mm.position.set(x, y, z); mm.rotation.set(rx, ry, rz); inner.add(mm); return mm; };
     if (w.type === 'bow') {
       const riser = add(new THREE.BoxGeometry(0.03, 0.5, 0.05), black, 0, 0, 0); for (const sgn of [-1, 1]) { const limb = add(new THREE.BoxGeometry(0.04, 0.45, 0.015), new THREE.MeshStandardMaterial({ color: 0x3a4a3a }), 0, sgn * 0.42, 0.02, sgn * 0.35, 0, 0); const cam = add(new THREE.CylinderGeometry(0.05, 0.05, 0.02, 12), steel, 0, sgn * 0.62, 0.05, Math.PI / 2, 0, 0); }
       const str = add(new THREE.CylinderGeometry(0.0015, 0.0015, 1.3, 4), new THREE.MeshBasicMaterial({ color: 0xdddddd }), 0, 0, 0.09); s.string = str;
       const arrow = add(new THREE.CylinderGeometry(0.004, 0.004, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0x222 }), 0.01, 0.01, -0.28, Math.PI / 2, 0, 0); s.arrow = arrow; add(new THREE.ConeGeometry(0.008, 0.04, 6), steel, 0.01, 0.01, -0.67, -Math.PI / 2, 0, 0).name = 'tip';
-      g.userData.hip = { x: 0.16, y: -0.2, z: -0.45, rz: 0.2 }; g.userData.ads = { x: 0.06, y: -0.12, z: -0.35, rz: 0.1 }; return this.finishModel(g);
+      inner.position.set(0, 0, 0); g.userData.hip = { x: 0.16, y: -0.2, z: -0.25, rz: 0.2 }; g.userData.ads = { x: 0.05, y: -0.1, z: -0.2, rz: 0.1 }; return this.finishModel(g);
     }
     const isShot = w.type === 'shotgun'; const bl = isShot ? (w.trap ? 0.8 : 0.72) : w.action === 'lever' ? 0.55 : 0.62;
     // crosse + poignée
@@ -42,10 +42,10 @@ HG.Weapons = class Weapons {
     if (w.action === 'lever') add(new THREE.TorusGeometry(0.03, 0.005, 6, 12, Math.PI), steel, 0, -0.045, 0.02, 0, Math.PI / 2, 0);
     if (w.action === 'bolt' || w.action === 'semi' && !isShot) add(new THREE.BoxGeometry(0.03, 0.06, 0.08), black, 0, -0.06, -0.06);
     // guidon / hausse / lunette
-    add(new THREE.BoxGeometry(0.004, 0.012, 0.004), black, 0, 0.03, -0.15 - bl + 0.02); s.frontSight = g.children[g.children.length - 1];
+    s.frontSight = add(new THREE.BoxGeometry(0.004, 0.012, 0.004), black, 0, 0.03, -0.15 - bl + 0.02);
     if (s.opticId !== 'none') { const o = s.optic; if (o.reticle === 'dot') { add(new THREE.BoxGeometry(0.03, 0.03, 0.05), black, 0, 0.05, -0.1); add(new THREE.CylinderGeometry(0.014, 0.014, 0.004, 12), new THREE.MeshBasicMaterial({ color: 0x224466, transparent: true, opacity: 0.5 }), 0, 0.052, -0.125, Math.PI / 2, 0, 0); } else { const L = 0.28; add(new THREE.CylinderGeometry(0.014, 0.014, L, 12), black, 0, 0.055, -0.1, Math.PI / 2, 0, 0); add(new THREE.CylinderGeometry(0.02, 0.016, 0.07, 12), black, 0, 0.055, -0.1 - L / 2 - 0.03, Math.PI / 2, 0, 0); add(new THREE.CylinderGeometry(0.016, 0.018, 0.05, 12), black, 0, 0.055, -0.1 + L / 2 + 0.02, Math.PI / 2, 0, 0); add(new THREE.CylinderGeometry(0.008, 0.008, 0.012, 8), black, 0, 0.055, -0.1, 0, 0, 0); add(new THREE.BoxGeometry(0.02, 0.03, 0.03), black, 0, 0.03, -0.02); add(new THREE.BoxGeometry(0.02, 0.03, 0.03), black, 0, 0.03, -0.2); } }
     else add(new THREE.BoxGeometry(0.02, 0.008, 0.006), black, 0, 0.03, -0.1);
-    g.userData.hip = { x: 0.2, y: -0.22, z: -0.42, rz: 0.06, ry: 0.06 }; g.userData.ads = { x: 0, y: s.opticId !== 'none' ? -0.055 : -0.032, z: -0.28 + (s.opticId !== 'none' ? 0.04 : 0), rz: 0, ry: 0 };
+    g.userData.hip = { x: 0.17, y: -0.19, z: -0.12, rz: 0.05, ry: 0.05 }; g.userData.ads = { x: 0, y: (s.opticId !== 'none' ? -0.055 : -0.03) * 0.62 - 0.006, z: -0.1 + (s.opticId !== 'none' ? 0.1 : 0), rz: 0, ry: 0 };
     return this.finishModel(g);
   }
   finishModel(g) { g.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.frustumCulled = false; o.renderOrder = 10; } }); g.visible = false; this.rig.add(g); return g; }
