@@ -24,13 +24,13 @@ DH.Input = class Input {
       this.mouse.left = this.mouse.right = false;
     });
     document.addEventListener('mousemove', (e) => {
-      if (!this.locked) return;
+      if (!this.locked && !(this.noLock && this.enabled)) return;
       this.mouse.dx += e.movementX || 0;
       this.mouse.dy += e.movementY || 0;
     });
     canvas.addEventListener('mousedown', (e) => {
       if (!this.enabled) return;
-      if (!this.locked && !this.isTouch) {
+      if (!this.locked && !this.isTouch && !this.noLock) {
         this.requestLock();
         return;
       }
@@ -46,8 +46,9 @@ DH.Input = class Input {
     });
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     window.addEventListener('wheel', (e) => {
-      if (this.enabled && this.locked) this.mouse.wheel += Math.sign(e.deltaY);
+      if (this.enabled && (this.locked || this.noLock)) this.mouse.wheel += Math.sign(e.deltaY);
     }, { passive: true });
+    document.addEventListener('pointerlockerror', () => this.lockFailed());
     document.addEventListener('pointerlockchange', () => {
       this.locked = document.pointerLockElement === canvas;
       if (this.onLockChange) this.onLockChange(this.locked);
@@ -55,11 +56,21 @@ DH.Input = class Input {
   }
 
   requestLock() {
-    if (this.isTouch) return;
+    if (this.isTouch || this.noLock) return;
     try {
+      if (!this.canvas.requestPointerLock) return this.lockFailed();
       const p = this.canvas.requestPointerLock();
-      if (p && p.catch) p.catch(() => {});
-    } catch (e) { /* navigateur sans pointer lock */ }
+      if (p && p.catch) p.catch(() => this.lockFailed());
+    } catch (e) {
+      this.lockFailed();
+    }
+  }
+
+  // Verrouillage de la souris refusé (ex. page intégrée) : on joue sans
+  lockFailed() {
+    if (this.noLock) return;
+    this.noLock = true;
+    if (this.onLockError) this.onLockError();
   }
 
   exitLock() {

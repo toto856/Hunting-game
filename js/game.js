@@ -221,8 +221,11 @@
       this.menuT = 0;
       window.addEventListener('resize', () => this.resize());
       this.input.onLockChange = (locked) => {
-        if (this.state === 'playing' && !locked && !this.input.isTouch) this.pause();
+        if (this.state === 'playing' && !locked && !this.input.isTouch && !this.input.noLock) this.pause();
         if (this.state === 'paused' && locked) this.resume();
+      };
+      this.input.onLockError = () => {
+        if (this.state === 'paused') this.resume();
       };
       window.addEventListener('keydown', (e) => {
         if (e.code === 'Escape' && this.state === 'playing' && (this.input.isTouch || !this.input.locked)) this.pause();
@@ -304,7 +307,7 @@
           this.ui.showHud(true);
           this.state = 'playing';
           this.input.enabled = true;
-          if (!this.input.isTouch && !this.input.locked) this.pause();
+          if (!this.input.isTouch && !this.input.locked && !this.input.noLock) this.pause();
         } catch (e) {
           console.error(e);
           this.ui.showLoading(false);

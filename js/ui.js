@@ -423,7 +423,7 @@ DH.ui = (() => {
         return showSetup();
       case 'menu': return game.toMenu();
       case 'resume':
-        if (game.input.isTouch) game.resume();
+        if (game.input.isTouch || game.input.noLock) game.resume();
         else game.input.requestLock();
         return;
       case 'pause-options': return showOptions('pause');
