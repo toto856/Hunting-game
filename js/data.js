@@ -1,296 +1,191 @@
-// Données du jeu : armes, munitions, équipements, espèces, cartes, météo, modes.
+// Données du jeu : espèces, armes, munitions, optiques, chiens, équipement, territoires, modes.
 'use strict';
 
-DH.data = (() => {
-  // ------------------------------------------------------------------ ARMES
-  // spread : écart-type angulaire (radians) de la gerbe avant choke
-  const weapons = [
-    {
-      id: 'pump', name: 'Fusil à pompe Cal.12', short: 'Pompe 12',
-      desc: "Robuste et fiable. Réarmement manuel à la pompe après chaque tir.",
-      level: 1, price: 0, action: 'pump', gauge: 12,
-      pellets: 1.0, spread: 0.0135, capacity: 5, reserve: 40,
-      cycle: 0.55, fireDelay: 0.1, reloadShell: 0.5, recoil: 1.0, sway: 1.0, adsFov: 55,
-      look: { wood: '#5a3518', metal: '#2a2c30', barrels: 1, tube: true },
-    },
-    {
-      id: 'sxs', name: 'Juxtaposé Cal.12', short: 'Juxtaposé',
-      desc: "Le classique des marais : deux canons, deux coups rapides, rechargement en brisant l'arme.",
-      level: 2, price: 900, action: 'break', gauge: 12,
-      pellets: 1.05, spread: 0.0125, capacity: 2, reserve: 40,
-      cycle: 0.14, fireDelay: 0.14, reloadBreak: 1.7, recoil: 1.1, sway: 0.9, adsFov: 54,
-      look: { wood: '#6e3d17', metal: '#3a3a3a', barrels: 2, side: true, engraved: true },
-    },
-    {
-      id: 'ou20', name: 'Superposé Cal.20 « Bécassier »', short: 'Superposé 20',
-      desc: 'Léger et maniable, très stable en visée. Gerbe plus légère.',
-      level: 3, price: 1500, action: 'break', gauge: 20,
-      pellets: 0.8, spread: 0.0115, capacity: 2, reserve: 50,
-      cycle: 0.12, fireDelay: 0.12, reloadBreak: 1.4, recoil: 0.65, sway: 0.6, adsFov: 52,
-      look: { wood: '#8a4b20', metal: '#50535a', barrels: 2, side: false, engraved: true },
-    },
-    {
-      id: 'semi', name: 'Semi-automatique Cal.12', short: 'Semi-auto',
-      desc: 'Emprunt des gaz : trois coups rapides, recul adouci.',
-      level: 4, price: 2500, action: 'semi', gauge: 12,
-      pellets: 1.0, spread: 0.013, capacity: 3, reserve: 45,
-      cycle: 0.2, fireDelay: 0.2, reloadShell: 0.42, recoil: 0.8, sway: 0.9, adsFov: 55,
-      look: { wood: '#3b3f35', metal: '#1c1d20', barrels: 1, tube: true, synthetic: true },
-    },
-    {
-      id: 'rifle', name: 'Carabine .17 HMR à lunette', short: 'Carabine .17',
-      desc: 'Pour les tirs de précision à longue distance. Une seule balle : visez juste !',
-      level: 5, price: 3200, action: 'bolt', gauge: 0, bullet: true,
-      pellets: 1, spread: 0.0008, capacity: 5, reserve: 40,
-      cycle: 0.75, fireDelay: 0.1, reloadMag: 2.0, recoil: 0.35, sway: 0.7, adsFov: 14, scope: true,
-      look: { wood: '#6b4020', metal: '#202226', barrels: 1, scope: true },
-    },
-    {
-      id: 'magnum', name: 'Magnum Cal.10 « Canardière »', short: 'Magnum 10',
-      desc: 'Puissance et portée extrêmes pour les oies. Lourd, fort recul.',
-      level: 7, price: 5500, action: 'pump', gauge: 10,
-      pellets: 1.45, spread: 0.012, capacity: 3, reserve: 30,
-      cycle: 0.75, fireDelay: 0.1, reloadShell: 0.6, recoil: 1.7, sway: 1.45, adsFov: 53,
-      range: 1.25,
-      look: { wood: '#4a2a12', metal: '#2e3a2e', barrels: 1, tube: true, long: true },
-    },
-    {
-      id: 'gold', name: 'Superposé d\'exception « Or Royal »', short: 'Or Royal',
-      desc: 'Arme de collection gravée à l\'or fin. Gerbe parfaite, stabilité légendaire.',
-      level: 12, price: 15000, action: 'break', gauge: 12,
-      pellets: 1.15, spread: 0.0105, capacity: 2, reserve: 60,
-      cycle: 0.1, fireDelay: 0.1, reloadBreak: 1.2, recoil: 0.8, sway: 0.5, adsFov: 50, range: 1.15,
-      look: { wood: '#3d1e0c', metal: '#c9a23a', barrels: 2, side: false, engraved: true, gold: true },
-    },
-  ];
-
-  // ------------------------------------------------------------------ CARTOUCHES
-  const cartridges = [
-    { id: 'lead6', name: 'Plomb n°6 (standard)', level: 1, price: 0, pellets: 11, dmg: 11, range: 38, speed: 390, spreadMul: 1.0, desc: 'Cartouche de base polyvalente.' },
-    { id: 'steel4', name: 'Acier n°4', level: 2, price: 350, pellets: 10, dmg: 13, range: 42, speed: 420, spreadMul: 0.9, desc: 'Obligatoire en zone humide. Gerbe serrée, plus rapide.' },
-    { id: 'bismuth5', name: 'Bismuth n°5', level: 4, price: 900, pellets: 12, dmg: 14, range: 46, speed: 400, spreadMul: 0.95, desc: 'Excellente énergie, portée accrue.' },
-    { id: 'magnum2', name: 'Magnum 3" n°2', level: 6, price: 1800, pellets: 13, dmg: 18, range: 50, speed: 410, spreadMul: 1.0, recoil: 1.3, desc: 'Grosse charge pour les oies. Recul important.' },
-    { id: 'tss7', name: 'Tungstène TSS n°7', level: 9, price: 4000, pellets: 16, dmg: 16, range: 60, speed: 400, spreadMul: 0.85, desc: 'Le nec plus ultra : densité et portée hors norme.' },
-  ];
-
-  // ------------------------------------------------------------------ CHOKES
-  const chokes = [
-    { id: 'cyl', name: 'Cylindrique', mul: 1.45, desc: 'Gerbe très ouverte, idéal < 20 m' },
-    { id: 'mod', name: '1/2 choke', mul: 1.0, desc: 'Équilibré' },
-    { id: 'full', name: 'Full choke', mul: 0.68, desc: 'Gerbe serrée, tirs lointains' },
-  ];
-
-  // ------------------------------------------------------------------ ÉQUIPEMENT
-  const equipment = [
-    { id: 'call', name: 'Appeau à canard', level: 1, price: 200, key: 'F', desc: 'Touche F : attire les vols proches vers vous.' },
-    { id: 'binoc', name: 'Jumelles 10×42', level: 1, price: 350, key: 'B', desc: 'Touche B : repérez les vols au loin.' },
-    { id: 'belt', name: 'Cartouchière', level: 2, price: 500, desc: '+50 % de munitions de réserve.' },
-    { id: 'decoys', name: 'Appelants (formes)', level: 2, price: 650, desc: 'Des leurres posés sur l\'eau : plus de canards se posent devant vous.' },
-    { id: 'chokes', name: 'Jeu de chokes', level: 3, price: 600, desc: 'Choisissez l\'ouverture de votre gerbe avant la partie.' },
-    { id: 'camo', name: 'Tenue camouflage', level: 3, price: 900, desc: 'Les canards vous repèrent beaucoup moins vite.' },
-    { id: 'dog', name: 'Labrador rapporteur', level: 4, price: 2200, desc: 'Votre chien rapporte le gibier : +25 % de gains.' },
-    { id: 'waders', name: 'Waders', level: 5, price: 800, desc: 'Marchez dans l\'eau plus profonde sans ralentir autant.' },
-  ];
-
+HG.data = (() => {
   // ------------------------------------------------------------------ ESPÈCES
+  // kind: 'big' (grand gibier), 'small' (petit gibier), 'bird' (oiseau), 'water' (gibier d'eau)
+  // vital: résistance (énergie J nécessaire pour un tir vital propre)
   const species = {
-    colvert_m: {
-      name: 'Canard colvert ♂', pts: 50, hp: 26, speed: 15, size: 1.0, erratic: 0.2, quack: 1.0, wary: 1.0,
-      colors: { head: '#1c6b3c', ring: '#f2f2f2', chest: '#6a3a22', body: '#b8b3aa', back: '#5b594f', wing: '#77736a', spec: '#3940b8', bill: '#d9c02c', tail: '#1e1e1e', belly: '#c9c6bf' },
-      info: 'Le plus commun des canards. Tête vert bouteille, collier blanc.',
-    },
-    colvert_f: {
-      name: 'Canard colvert ♀', pts: 50, hp: 24, speed: 15, size: 0.95, erratic: 0.2, quack: 1.15, wary: 1.0,
-      colors: { head: '#8b6a48', chest: '#7a5a3c', body: '#80603f', back: '#5e4630', wing: '#6d5540', spec: '#3940b8', bill: '#c9782c', tail: '#6b5037', belly: '#9b7b58' },
-      info: 'Plumage brun chiné, discret. Cancane bruyamment.',
-    },
-    sarcelle: {
-      name: "Sarcelle d'hiver", pts: 85, hp: 16, speed: 19, size: 0.68, erratic: 1.0, quack: 1.6, wary: 1.3,
-      colors: { head: '#8a3520', mask: '#1f6b45', chest: '#d9ceb0', body: '#9b9b96', back: '#7c7c78', wing: '#6d6b66', spec: '#1f8a4d', bill: '#2a2a2a', tail: '#e0cc6a', belly: '#e6e0d0' },
-      info: 'Le plus petit canard d\'Europe. Vol rapide et zigzagant.',
-    },
-    pilet: {
-      name: 'Canard pilet', pts: 70, hp: 26, speed: 17, size: 1.05, erratic: 0.3, quack: 0.9, wary: 1.1, longTail: true,
-      colors: { head: '#5b3a24', ring: '#f0f0f0', chest: '#f0efe8', body: '#a3a39f', back: '#6d6d6a', wing: '#7b7b76', spec: '#3a6e40', bill: '#6c7a88', tail: '#1e1e1e', belly: '#f0efe8' },
-      info: 'Silhouette élancée, longue queue effilée.',
-    },
-    mandarin: {
-      name: 'Canard mandarin', pts: 250, hp: 20, speed: 15, size: 0.82, erratic: 0.4, quack: 1.4, wary: 1.4, rare: true,
-      colors: { head: '#e0762e', mask: '#f5f5f0', chest: '#5d2b6e', body: '#c77b36', back: '#3b3a45', wing: '#e08a2e', spec: '#2a5ea8', bill: '#d63a2c', tail: '#2a2a30', belly: '#f5f5f0' },
-      info: 'Rare et spectaculaire. Rapporte gros !',
-    },
-    branchu: {
-      name: 'Canard branchu', pts: 180, hp: 20, speed: 16, size: 0.85, erratic: 0.4, quack: 1.3, wary: 1.3, rare: true,
-      colors: { head: '#1d5a44', mask: '#f5f5f5', chest: '#7a3a2a', body: '#c9b27a', back: '#2a2c3a', wing: '#2e3a5a', spec: '#3a58b8', bill: '#d63a2c', tail: '#1a1a22', belly: '#e8e0cc' },
-      info: 'Le joyau des bayous américains.',
-    },
-    eider: {
-      name: 'Eider à duvet', pts: 95, hp: 34, speed: 16, size: 1.2, erratic: 0.15, quack: 0.7, wary: 0.9,
-      colors: { head: '#f0f0ea', mask: '#111111', chest: '#f2e2c8', body: '#f0f0ea', back: '#f0f0ea', wing: '#1a1a1a', spec: '#1a1a1a', bill: '#8a9a6a', tail: '#111', belly: '#151515' },
-      info: 'Canard marin massif des mers froides.',
-    },
-    oie: {
-      name: 'Oie cendrée', pts: 130, hp: 60, speed: 13, size: 1.75, erratic: 0.05, quack: 0.55, wary: 1.2, goose: true,
-      colors: { head: '#77705f', chest: '#8a8474', body: '#7d7666', back: '#5f5a4d', wing: '#8e8b82', spec: '#9aa0a6', bill: '#e88a3a', tail: '#f0f0f0', belly: '#b9b4a6' },
-      info: 'Vole en V en cacardant. Robuste : visez bien.',
-    },
-    bernache: {
-      name: 'Bernache du Canada', pts: 140, hp: 62, speed: 13, size: 1.8, erratic: 0.05, quack: 0.6, wary: 1.2, goose: true,
-      colors: { head: '#151515', mask: '#f2f2f2', chest: '#c9c0ae', body: '#7a6a55', back: '#5a4c3c', wing: '#6a5c4a', spec: '#6a5c4a', bill: '#151515', tail: '#151515', belly: '#e0d8c8' },
-      info: 'Grande oie à cou noir et joues blanches.',
-    },
-    cygne: {
-      name: 'Cygne tuberculé', pts: -400, hp: 90, speed: 11, size: 2.5, erratic: 0, quack: 0.4, wary: 0.6, goose: true, protected: true, swan: true,
-      colors: { head: '#f7f7f4', chest: '#f7f7f4', body: '#f7f7f4', back: '#f0f0ec', wing: '#f4f4f0', spec: '#f4f4f0', bill: '#e0602a', tail: '#f0f0ec', belly: '#f7f7f4' },
-      info: 'ESPÈCE PROTÉGÉE — ne pas tirer !',
-    },
-    tadorne: {
-      name: 'Tadorne de Belon', pts: -300, hp: 28, speed: 15, size: 1.1, erratic: 0.1, quack: 1.1, wary: 1.0, protected: true,
-      colors: { head: '#10302a', chest: '#b5652a', body: '#f4f4f0', back: '#f4f4f0', wing: '#f4f4f0', spec: '#1a6a3a', bill: '#c8202a', tail: '#f4f4f0', belly: '#f4f4f0', band: '#b5652a' },
-      info: 'ESPÈCE PROTÉGÉE en France — ne pas tirer !',
-    },
+    cerf:      { name: 'Cerf élaphe', kind: 'big', len: 2.2, h: 1.35, mass: [120, 240], walk: 1.2, run: 11, colors: ['#6f5232', '#8a6a44'], belly: '#b79b73', antlers: true, herd: [1, 6], sight: 90, hear: 110, smell: 260, value: 900, xp: 180, vital: 2200, trophy: 'Bois (cors)', legal: true, night: false, vocal: 'brame', danger: 0 },
+    biche:     { name: 'Biche', kind: 'big', len: 1.9, h: 1.2, mass: [80, 130], walk: 1.2, run: 11, colors: ['#7a5a3a', '#8f7250'], belly: '#c0a684', antlers: false, herd: [2, 8], sight: 95, hear: 110, smell: 260, value: 380, xp: 90, vital: 1600, trophy: 'Poids', legal: true, female: true },
+    daim:      { name: 'Daim', kind: 'big', len: 1.6, h: 0.95, mass: [55, 95], walk: 1.1, run: 10, colors: ['#9a7147', '#a37b52'], belly: '#d9c39c', spots: true, antlers: 'palmes', herd: [2, 7], sight: 90, hear: 100, smell: 220, value: 520, xp: 120, vital: 1500, trophy: 'Palmes' },
+    chevreuil: { name: 'Chevreuil', kind: 'big', len: 1.2, h: 0.72, mass: [18, 32], walk: 1.0, run: 10, colors: ['#9e6d40', '#b07c4a'], belly: '#e8d7b5', antlers: 'small', herd: [1, 3], sight: 80, hear: 100, smell: 200, value: 320, xp: 80, vital: 900, trophy: 'Bois (pointes)', vocal: 'aboiement' },
+    chevrette: { name: 'Chevrette', kind: 'big', len: 1.15, h: 0.7, mass: [16, 26], walk: 1.0, run: 10, colors: ['#a3713f', '#b58452'], belly: '#eadcbb', herd: [1, 3], sight: 80, hear: 100, smell: 200, value: 160, xp: 45, vital: 800, trophy: 'Poids', female: true },
+    sanglier:  { name: 'Sanglier', kind: 'big', len: 1.5, h: 0.85, mass: [50, 140], walk: 1.2, run: 10, colors: ['#3a2c22', '#4a3a2c'], belly: '#5b4a3a', tusks: true, herd: [1, 8], sight: 45, hear: 110, smell: 300, value: 600, xp: 150, vital: 2000, trophy: 'Défenses (cm)', night: true, danger: 1, vocal: 'grognement' },
+    laie:      { name: 'Laie', kind: 'big', len: 1.35, h: 0.75, mass: [45, 95], walk: 1.2, run: 10, colors: ['#3e3026', '#4c3c2f'], belly: '#5d4c3d', herd: [3, 9], sight: 45, hear: 110, smell: 300, value: 350, xp: 90, vital: 1600, trophy: 'Poids', night: true, female: true, vocal: 'grognement' },
+    marcassin: { name: 'Marcassin', kind: 'big', len: 0.7, h: 0.4, mass: [8, 20], walk: 1.2, run: 8, colors: ['#8b6a3e', '#a58252'], belly: '#c9a877', stripes: true, herd: [3, 6], sight: 40, hear: 90, smell: 200, value: 0, xp: 0, vital: 500, protectedLabel: 'Tir interdit (marcassin rayé)', illegal: true },
+    chamois:   { name: 'Chamois', kind: 'big', len: 1.2, h: 0.78, mass: [25, 45], walk: 1.1, run: 9, colors: ['#5a4a3a', '#7a6a55'], belly: '#c7b89b', horns: 'hook', herd: [2, 9], sight: 140, hear: 110, smell: 240, value: 700, xp: 170, vital: 900, trophy: 'Cornes (cm)' },
+    mouflon:   { name: 'Mouflon', kind: 'big', len: 1.25, h: 0.75, mass: [30, 55], walk: 1.1, run: 9, colors: ['#6b4a2e', '#8a6a48'], belly: '#e0d3b8', horns: 'curl', herd: [3, 10], sight: 150, hear: 100, smell: 220, value: 850, xp: 190, vital: 1000, trophy: 'Enroulement (cm)' },
+    bouquetin: { name: 'Bouquetin des Alpes', kind: 'big', len: 1.5, h: 0.9, mass: [70, 110], walk: 1.0, run: 8, colors: ['#8a7a62', '#a29377'], belly: '#d9cdb3', horns: 'big', herd: [2, 6], sight: 150, hear: 100, smell: 200, value: 0, xp: 0, vital: 1500, protectedLabel: 'ESPÈCE PROTÉGÉE', illegal: true, fine: 3000 },
+    marmotte:  { name: 'Marmotte', kind: 'small', len: 0.55, h: 0.25, mass: [4, 7], walk: 0.6, run: 5, colors: ['#8b7148', '#a68a5c'], belly: '#d6c19a', herd: [1, 3], sight: 120, hear: 90, smell: 60, value: 0, xp: 0, vital: 200, protectedLabel: 'Tir interdit ici', illegal: true, fine: 800, vocal: 'siffle' },
+    orignal:   { name: 'Orignal', kind: 'big', len: 2.9, h: 1.9, mass: [350, 600], walk: 1.3, run: 12, colors: ['#3a2a1c', '#4d3a28'], belly: '#6a5745', antlers: 'moose', herd: [1, 2], sight: 60, hear: 120, smell: 320, value: 1800, xp: 400, vital: 3200, trophy: 'Envergure (cm)' },
+    wapiti:    { name: 'Wapiti', kind: 'big', len: 2.5, h: 1.5, mass: [220, 380], walk: 1.3, run: 12, colors: ['#8a6a44', '#a58860'], belly: '#d8c5a0', antlers: true, herd: [2, 10], sight: 100, hear: 110, smell: 280, value: 1400, xp: 320, vital: 2800, trophy: 'Bois (cors)', vocal: 'brame' },
+    ours:      { name: 'Ours noir', kind: 'big', len: 1.7, h: 1.0, mass: [90, 250], walk: 1.0, run: 12, colors: ['#151210', '#231d18'], belly: '#2b241e', herd: [1, 1], sight: 50, hear: 100, smell: 400, value: 2200, xp: 450, vital: 3000, trophy: 'Crâne (cm)', danger: 2, bear: true },
+    coyote:    { name: 'Coyote', kind: 'small', len: 1.1, h: 0.55, mass: [10, 18], walk: 1.2, run: 14, colors: ['#9a8562', '#b09a72'], belly: '#e2d6bc', herd: [1, 3], sight: 120, hear: 140, smell: 300, value: 220, xp: 70, vital: 500, trophy: 'Poids', night: true, canid: true },
+    renard:    { name: 'Renard roux', kind: 'small', len: 0.75, h: 0.4, mass: [4, 9], walk: 1.2, run: 13, colors: ['#c1602a', '#d17838'], belly: '#f2e7d6', herd: [1, 1], sight: 110, hear: 140, smell: 280, value: 120, xp: 50, vital: 350, trophy: 'Poids', night: true, canid: true },
+    lievre:    { name: 'Lièvre d\'Europe', kind: 'small', len: 0.6, h: 0.28, mass: [3, 5.5], walk: 0.6, run: 15, colors: ['#9b7d55', '#b09265'], belly: '#eee4d0', herd: [1, 2], sight: 90, hear: 130, smell: 80, value: 90, xp: 35, vital: 200, trophy: 'Poids', hare: true },
+    lapin:     { name: 'Lapin de garenne', kind: 'small', len: 0.4, h: 0.2, mass: [1.2, 2], walk: 0.5, run: 10, colors: ['#8a7358', '#a08865'], belly: '#e8dfcc', herd: [2, 6], sight: 70, hear: 110, smell: 60, value: 40, xp: 18, vital: 120, trophy: 'Poids', hare: true },
+    ragondin:  { name: 'Ragondin', kind: 'small', len: 0.6, h: 0.25, mass: [5, 9], walk: 0.5, run: 4, colors: ['#5a4530', '#6e5638'], belly: '#8e7658', herd: [1, 4], sight: 40, hear: 60, smell: 60, value: 60, xp: 25, vital: 250, trophy: 'Poids', aquatic: true },
+    faisan:    { name: 'Faisan de Colchide', kind: 'bird', len: 0.8, h: 0.35, mass: [1, 1.5], walk: 0.6, fly: 16, colors: ['#8b3a1a', '#c4712a'], belly: '#5a2a10', herd: [1, 4], sight: 60, hear: 80, smell: 20, value: 55, xp: 25, vital: 60, trophy: 'Poids', ground: true, longtail: true, vocal: 'cri' },
+    perdrix:   { name: 'Perdrix rouge', kind: 'bird', len: 0.35, h: 0.2, mass: [0.4, 0.55], walk: 0.6, fly: 17, colors: ['#8c6a4a', '#a3795a'], belly: '#d9b892', herd: [4, 12], sight: 60, hear: 80, smell: 20, value: 45, xp: 22, vital: 40, trophy: 'Compagnie', ground: true },
+    becasse:   { name: 'Bécasse des bois', kind: 'bird', len: 0.35, h: 0.18, mass: [0.28, 0.35], walk: 0.4, fly: 14, colors: ['#6e5136', '#8a6a48'], belly: '#c9b090', herd: [1, 1], sight: 50, hear: 70, smell: 10, value: 110, xp: 45, vital: 35, trophy: 'Mordorée', ground: true, longbeak: true },
+    pigeon:    { name: 'Pigeon ramier', kind: 'bird', len: 0.4, h: 0.18, mass: [0.45, 0.55], walk: 0.4, fly: 20, colors: ['#6e7280', '#8b8f9d'], belly: '#b9a9b0', herd: [3, 12], sight: 80, hear: 60, smell: 10, value: 25, xp: 12, vital: 40, trophy: 'Poids', flyer: true },
+    corneille: { name: 'Corneille noire', kind: 'bird', len: 0.45, h: 0.2, mass: [0.45, 0.6], walk: 0.4, fly: 15, colors: ['#151515', '#222'], belly: '#1c1c1c', herd: [2, 8], sight: 120, hear: 80, smell: 10, value: 15, xp: 10, vital: 40, trophy: 'Régulation', flyer: true, vocal: 'croasse' },
+    colvert:   { name: 'Canard colvert', kind: 'water', len: 0.55, h: 0.22, mass: [1, 1.4], walk: 0.4, fly: 20, colors: ['#5c4a36', '#2f6b3a'], belly: '#c9c0b0', herd: [3, 10], sight: 70, hear: 70, smell: 10, value: 50, xp: 25, vital: 45, trophy: 'Poids', duck: true, vocal: 'cancan' },
+    sarcelle:  { name: 'Sarcelle d\'hiver', kind: 'water', len: 0.36, h: 0.16, mass: [0.3, 0.4], walk: 0.4, fly: 25, colors: ['#7a5b3a', '#4b6f3f'], belly: '#d8cfc0', herd: [4, 14], sight: 70, hear: 70, smell: 10, value: 45, xp: 24, vital: 30, trophy: 'Poids', duck: true },
+    oie:       { name: 'Oie cendrée', kind: 'water', len: 0.85, h: 0.35, mass: [3, 4.5], walk: 0.5, fly: 19, colors: ['#8e8778', '#a39c8c'], belly: '#d9d3c4', herd: [4, 12], sight: 90, hear: 80, smell: 10, value: 95, xp: 40, vital: 90, trophy: 'Poids', duck: true, goose: true, vocal: 'cacarde' },
+    cygne:     { name: 'Cygne tuberculé', kind: 'water', len: 1.4, h: 0.6, mass: [9, 13], walk: 0.5, fly: 18, colors: ['#f2f0ea', '#f7f5f0'], belly: '#ffffff', herd: [2, 4], sight: 90, hear: 80, smell: 10, value: 0, xp: 0, vital: 120, duck: true, goose: true, protectedLabel: 'ESPÈCE PROTÉGÉE', illegal: true, fine: 1500 },
+    heron:     { name: 'Héron cendré', kind: 'water', len: 0.95, h: 0.9, mass: [1.5, 2], walk: 0.3, fly: 12, colors: ['#8d949a', '#b7bcc0'], belly: '#e2e4e6', herd: [1, 1], sight: 100, hear: 80, smell: 10, value: 0, xp: 0, vital: 60, protectedLabel: 'ESPÈCE PROTÉGÉE', illegal: true, fine: 1500, wader: true },
   };
 
-  // ------------------------------------------------------------------ CARTES
-  // shape : fonction de relief utilisée par le monde
-  const maps = [
-    {
-      id: 'marais', name: 'Marais de Camargue', level: 1,
-      desc: 'Étangs, roselières et tamaris sous le soleil du Midi.',
-      seed: 1234, shape: 'marsh', amp: 3.2, snow: 0, frozen: false, echo: 0.15,
-      spawn: { x: 0, z: 34, yaw: 0 },
-      basins: [
-        { x: 0, z: -18, r: 42, d: 2.4 }, { x: -85, z: -55, r: 32, d: 2 }, { x: 90, z: -25, r: 36, d: 2 },
-        { x: -30, z: -115, r: 50, d: 2.6 }, { x: 75, z: -115, r: 40, d: 2 }, { x: -120, z: 60, r: 30, d: 1.8 },
-      ],
-      ground: ['#6f7d3a', '#8b8a45', '#5d6b30', '#9c8f58'], mud: '#5a5040', sand: '#b8a67a', rock: '#8a8478',
-      veg: { deciduous: 90, pine: 70, bush: 260, reeds: 7000, grass: 7000, rocks: 30 },
-      canopy: ['#5f7a36', '#6e8a3c', '#4f6b30', '#7a8a4a'], reed: '#9a9a55', grass: '#8a9a48',
-      water: { deep: '#27433f', shallow: '#4f6b58' },
-      species: { colvert_m: 30, colvert_f: 22, sarcelle: 18, pilet: 12, oie: 6, mandarin: 2, tadorne: 5, cygne: 3 },
-      weather: 'clair',
-    },
-    {
-      id: 'foret', name: "Lac de la Forêt d'Automne", level: 2,
-      desc: 'Un lac paisible cerné de chênes, érables et bouleaux flamboyants.',
-      seed: 777, shape: 'lake', amp: 16, snow: 0, frozen: false, echo: 0.35,
-      spawn: { x: 0, z: 30, yaw: 0 },
-      basins: [{ x: 0, z: -60, r: 85, d: 4 }, { x: -110, z: -20, r: 35, d: 2.5 }, { x: 70, z: 70, r: 20, d: 1.5 }],
-      ground: ['#6b5a2e', '#7d6a34', '#5c5a2c', '#8a5a2a'], mud: '#4d3f2c', sand: '#8f7a52', rock: '#7a756c',
-      veg: { deciduous: 750, pine: 180, birch: 160, bush: 300, reeds: 2500, grass: 5000, rocks: 60 },
-      canopy: ['#c8561e', '#d88a1e', '#b8321a', '#e0b02a', '#8a6a1e', '#a0401a', '#6a7a2a'], reed: '#a08a4a', grass: '#8a7a3a',
-      water: { deep: '#1e3238', shallow: '#3f5a52' },
-      species: { colvert_m: 32, colvert_f: 24, sarcelle: 12, mandarin: 6, pilet: 8, oie: 8, cygne: 4, tadorne: 2 },
-      weather: 'nuageux',
-    },
-    {
-      id: 'riviere', name: 'Rivière Gelée', level: 4,
-      desc: "Une rivière prise par les glaces. Les canards se regroupent dans les trous d'eau libre.",
-      seed: 4242, shape: 'river', amp: 12, snow: 0.9, frozen: true, echo: 0.3,
-      spawn: { x: 0, z: 34, yaw: 0 },
-      basins: [{ x: 0, z: -2, r: 26, d: 3 }, { x: -95, z: 0, r: 22, d: 3 }, { x: 105, z: 0, r: 20, d: 3 }],
-      ground: ['#6a6448', '#5a5a44', '#7a6a4a'], mud: '#4a4538', sand: '#8a8070', rock: '#6a6a6e',
-      veg: { pine: 520, birch: 140, bare: 220, bush: 120, reeds: 1800, grass: 1500, rocks: 80 },
-      canopy: ['#2c4a30', '#35553a', '#28402c'], reed: '#b0a070', grass: '#a09a70',
-      water: { deep: '#1a2c38', shallow: '#3a5260' },
-      species: { colvert_m: 34, colvert_f: 24, sarcelle: 10, pilet: 10, oie: 10, bernache: 6, cygne: 5 },
-      weather: 'neige_legere',
-    },
-    {
-      id: 'toundra', name: 'Toundra du Grand Nord', level: 6,
-      desc: "Immensité blanche, vent glacial et grands vols d'oies migratrices.",
-      seed: 9001, shape: 'tundra', amp: 7, snow: 1, frozen: true, echo: 0.05,
-      spawn: { x: 0, z: 30, yaw: 0 },
-      basins: [{ x: 0, z: -20, r: 34, d: 2.5 }, { x: -90, z: -80, r: 40, d: 2.5 }, { x: 100, z: -60, r: 30, d: 2 }, { x: 40, z: 110, r: 30, d: 2 }],
-      ground: ['#7a7560', '#6a6a58', '#8a8068'], mud: '#4a4538', sand: '#8a8070', rock: '#6a6a70',
-      veg: { pine: 140, bare: 80, bush: 200, reeds: 800, grass: 1200, rocks: 160 },
-      canopy: ['#23402c', '#2a4a32'], reed: '#b8a878', grass: '#a8a078',
-      water: { deep: '#162632', shallow: '#324a58' },
-      species: { oie: 28, bernache: 22, eider: 22, colvert_m: 12, colvert_f: 8, cygne: 8 },
-      weather: 'blizzard',
-    },
-    {
-      id: 'fjord', name: 'Fjord Norvégien', level: 9,
-      desc: 'Falaises vertigineuses et eaux profondes. Les cimes sont enneigées.',
-      seed: 3131, shape: 'fjord', amp: 55, snow: 0.15, snowLine: 18, frozen: false, echo: 0.6,
-      spawn: { x: 0, z: 26, yaw: 0 },
-      basins: [{ x: 0, z: -10, r: 30, d: 4 }],
-      ground: ['#4f6a38', '#5a7040', '#6a6a48'], mud: '#3f3a30', sand: '#7a7058', rock: '#6e6e70',
-      veg: { pine: 900, birch: 200, bush: 250, reeds: 900, grass: 4000, rocks: 260 },
-      canopy: ['#1f3d28', '#284a30', '#2f5236'], reed: '#8a9050', grass: '#6a8a40',
-      water: { deep: '#102a36', shallow: '#2a4a50' },
-      species: { eider: 30, colvert_m: 18, colvert_f: 14, oie: 12, bernache: 8, sarcelle: 10, cygne: 4 },
-      weather: 'nuageux',
-    },
-    {
-      id: 'bayou', name: 'Bayou de Louisiane', level: 12,
-      desc: 'Cyprès chauves drapés de mousse espagnole, brume chaude et eaux sombres.',
-      seed: 5150, shape: 'bayou', amp: 2.2, snow: 0, frozen: false, echo: 0.2,
-      spawn: { x: 0, z: 30, yaw: 0 },
-      basins: [{ x: 0, z: -12, r: 36, d: 2.2 }, { x: -70, z: -80, r: 45, d: 2 }, { x: 80, z: -70, r: 40, d: 2 }],
-      ground: ['#4a5a2a', '#5a6a30', '#3f4a24'], mud: '#3a3424', sand: '#6a5a3a', rock: '#5a5a50',
-      veg: { cypress: 380, deciduous: 160, bush: 350, reeds: 4500, grass: 5000, rocks: 10 },
-      canopy: ['#4a6a2a', '#5a7a30', '#3a5a24'], reed: '#7a8a40', grass: '#6a8a38',
-      water: { deep: '#1e2a1c', shallow: '#3a4a2c' },
-      species: { colvert_m: 22, colvert_f: 18, branchu: 14, sarcelle: 16, pilet: 10, bernache: 8, cygne: 4 },
-      weather: 'brouillard',
-    },
-  ];
+  // ------------------------------------------------------------------ ARMES
+  // type: shotgun | rifle | bow ; action: pump | semi | break2 | bolt | lever | double | bow
+  // mv: vitesse initiale (m/s), moa: précision, cal: calibre / munition
+  const weapons = {
+    // Fusils
+    pompe12:    { name: 'Fusil à pompe cal.12', type: 'shotgun', action: 'pump', cal: 'c12', cap: 4, price: 0, weight: 3.4, choke: true, desc: 'Fiable et polyvalent. Le fusil de tous les débuts.', tier: 0 },
+    superpose12:{ name: 'Superposé cal.12', type: 'shotgun', action: 'break2', cal: 'c12', cap: 2, price: 1450, weight: 3.3, choke: true, desc: 'Deux coups, deux chokes. Le classique du ball-trap et de la battue.', tier: 1 },
+    juxtapose12:{ name: 'Juxtaposé cal.12 « Bécassier »', type: 'shotgun', action: 'break2', cal: 'c12', cap: 2, price: 2100, weight: 2.9, choke: true, desc: 'Léger et vif, idéal pour le bois et le petit gibier devant soi.', tier: 1 },
+    semi12:     { name: 'Semi-automatique cal.12', type: 'shotgun', action: 'semi', cal: 'c12', cap: 3, price: 1650, weight: 3.5, choke: true, desc: 'Trois coups rapides, recul adouci. Excellent à la passée.', tier: 1 },
+    superpose20:{ name: 'Superposé cal.20', type: 'shotgun', action: 'break2', cal: 'c20', cap: 2, price: 1900, weight: 2.7, choke: true, desc: 'Fin et léger, un plaisir pour la bécasse et la perdrix.', tier: 2 },
+    trap12:     { name: 'Fusil de Trap « Compétition »', type: 'shotgun', action: 'break2', cal: 'c12', cap: 2, price: 4200, weight: 3.8, choke: true, desc: 'Canons longs, bande haute : conçu pour les plateaux.', tier: 2, trap: true },
+    // Carabines
+    c22lr:      { name: 'Carabine .22 LR', type: 'rifle', action: 'bolt', cal: 'r22', cap: 10, price: 350, weight: 2.5, mv: 380, moa: 1.5, scope: true, desc: 'Petit calibre pour les nuisibles et le stand à 50 m.', tier: 0 },
+    c243:       { name: 'Carabine à verrou .243 Win', type: 'rifle', action: 'bolt', cal: 'r243', cap: 4, price: 1300, weight: 3.2, mv: 900, moa: 0.8, scope: true, desc: 'Tendue et précise : chevreuil, chamois, renard.', tier: 1 },
+    c270:       { name: 'Carabine à verrou .270 Win', type: 'rifle', action: 'bolt', cal: 'r270', cap: 4, price: 1550, weight: 3.3, mv: 880, moa: 0.9, scope: true, desc: 'La carabine de montagne par excellence.', tier: 1 },
+    c308:       { name: 'Carabine à verrou .308 Win', type: 'rifle', action: 'bolt', cal: 'r308', cap: 4, price: 1400, weight: 3.4, mv: 820, moa: 1.0, scope: true, desc: 'Polyvalente : approche, affût, cerf et sanglier.', tier: 1 },
+    c3006:      { name: 'Carabine à verrou .30-06', type: 'rifle', action: 'bolt', cal: 'r3006', cap: 4, price: 1600, weight: 3.5, mv: 850, moa: 1.0, scope: true, desc: 'Le calibre universel du grand gibier.', tier: 1 },
+    semi3006:   { name: 'Semi-auto .30-06 « Battue »', type: 'rifle', action: 'semi', cal: 'r3006', cap: 5, price: 2400, weight: 3.6, mv: 840, moa: 1.6, scope: true, desc: 'Réarmement instantané pour le gibier lancé.', tier: 2 },
+    express93:  { name: 'Express juxtaposé 9,3x74R', type: 'rifle', action: 'double', cal: 'r93', cap: 2, price: 5800, weight: 3.9, mv: 700, moa: 1.8, scope: true, desc: 'Deux coups lourds : le sanglier de battue et l\'ours.', tier: 3 },
+    c300:       { name: 'Carabine .300 Win Mag', type: 'rifle', action: 'bolt', cal: 'r300', cap: 3, price: 3900, weight: 3.9, mv: 920, moa: 0.6, scope: true, desc: 'Longue portée : montagne et grands cervidés.', tier: 3 },
+    c65:        { name: 'Carabine 6,5 Creedmoor « Précision »', type: 'rifle', action: 'bolt', cap: 5, cal: 'r65', price: 3200, weight: 4.1, mv: 830, moa: 0.5, scope: true, desc: 'La plus précise du catalogue. Tir lointain en montagne.', tier: 3 },
+    lever4570:  { name: 'Lever-action .45-70', type: 'rifle', action: 'lever', cal: 'r4570', cap: 4, price: 1900, weight: 3.3, mv: 560, moa: 2.0, scope: true, desc: 'Coup de masse à courte distance. Orignal et ours en forêt.', tier: 2 },
+    // Arc
+    arc:        { name: 'Arc à poulies 60 lb', type: 'bow', action: 'bow', cal: 'fleche', cap: 1, price: 900, weight: 2.0, mv: 95, moa: 3, desc: 'Silencieux. Tir éthique à moins de 30 m.', tier: 1 },
+  };
 
-  // ------------------------------------------------------------------ MÉTÉO
-  // particles : style de précipitation ; snowAdd : accumulation au sol ; fog : densité
-  const weathers = [
-    { id: 'clair', name: 'Grand beau', icon: '☀️', level: 1, fog: 0.0022, clouds: 0.15, wind: 2, dim: 1, xp: 1.0 },
-    { id: 'nuageux', name: 'Couvert', icon: '☁️', level: 1, fog: 0.003, clouds: 0.75, wind: 4, dim: 0.7, xp: 1.05 },
-    { id: 'pluie', name: 'Pluie', icon: '🌧️', level: 1, fog: 0.006, clouds: 0.95, wind: 5, dim: 0.5, xp: 1.15, rain: { count: 9000, speed: 13, len: 0.5 } },
-    { id: 'neige_legere', name: 'Neige légère', icon: '🌨️', level: 1, fog: 0.005, clouds: 0.85, wind: 2, dim: 0.65, xp: 1.1, snowAdd: 0.35,
-      snow: { count: 3500, size: 0.07, fall: 1.1, sway: 0.4, swayFreq: 0.8, wind: 1, opacity: 0.9 } },
-    { id: 'brouillard', name: 'Brouillard', icon: '🌫️', level: 2, fog: 0.022, clouds: 0.9, wind: 0.5, dim: 0.55, xp: 1.3 },
-    { id: 'gros_flocons', name: 'Gros flocons', icon: '❄️', level: 3, fog: 0.009, clouds: 0.95, wind: 1.2, dim: 0.55, xp: 1.2, snowAdd: 0.7,
-      snow: { count: 2200, size: 0.2, fall: 0.75, sway: 0.9, swayFreq: 0.5, wind: 0.6, opacity: 0.95, flake: 'big' } },
-    { id: 'neige_fondante', name: 'Neige fondante', icon: '🌨️', level: 4, fog: 0.008, clouds: 1, wind: 4, dim: 0.45, xp: 1.2, snowAdd: 0.15,
-      rain: { count: 4000, speed: 9, len: 0.3 },
-      snow: { count: 2500, size: 0.1, fall: 2.6, sway: 0.2, swayFreq: 1.3, wind: 1, opacity: 0.75, flake: 'wet' } },
-    { id: 'poudreuse', name: 'Poudreuse scintillante', icon: '✨', level: 5, fog: 0.004, clouds: 0.1, wind: 1, dim: 1, xp: 1.15, snowAdd: 0.6,
-      snow: { count: 7000, size: 0.035, fall: 0.35, sway: 0.6, swayFreq: 1.5, wind: 0.8, opacity: 1, flake: 'sparkle' } },
-    { id: 'gresil', name: 'Grésil', icon: '🧊', level: 6, fog: 0.007, clouds: 1, wind: 5, dim: 0.5, xp: 1.25, snowAdd: 0.2,
-      snow: { count: 6000, size: 0.035, fall: 7.5, sway: 0.05, swayFreq: 2, wind: 1, opacity: 0.9, flake: 'pellet' } },
-    { id: 'orage', name: 'Orage', icon: '⛈️', level: 7, fog: 0.008, clouds: 1, wind: 8, dim: 0.32, xp: 1.35, lightning: true,
-      rain: { count: 14000, speed: 16, len: 0.7 } },
-    { id: 'blizzard', name: 'Blizzard', icon: '🌪️', level: 8, fog: 0.028, clouds: 1, wind: 15, dim: 0.5, xp: 1.5, snowAdd: 0.9,
-      snow: { count: 14000, size: 0.06, fall: 2.2, sway: 1.5, swayFreq: 2.2, wind: 1.3, opacity: 0.9 } },
-  ];
+  // ------------------------------------------------------------------ MUNITIONS
+  // pellets : nombre de plombs, pmass en g par plomb ; energy : J à la bouche pour balles
+  const ammo = {
+    c12_p75:  { name: 'Cal.12 plomb n°7,5 (ball-trap)', cal: 'c12', kind: 'shot', pellets: 380, pmass: 0.09, mv: 400, price: 9, box: 25, for: 'Plateaux, bécasse' },
+    c12_p6:   { name: 'Cal.12 plomb n°6 (petit gibier)', cal: 'c12', kind: 'shot', pellets: 260, pmass: 0.13, mv: 400, price: 11, box: 25, for: 'Faisan, perdrix, lapin, lièvre' },
+    c12_p4:   { name: 'Cal.12 acier n°4 (gibier d\'eau)', cal: 'c12', kind: 'shot', pellets: 190, pmass: 0.17, mv: 420, price: 14, box: 25, for: 'Canards (acier obligatoire en zone humide)' },
+    c12_p2:   { name: 'Cal.12 acier n°2 (oies)', cal: 'c12', kind: 'shot', pellets: 120, pmass: 0.28, mv: 420, price: 16, box: 25, for: 'Oies, renard' },
+    c12_slug: { name: 'Cal.12 balle Brenneke', cal: 'c12', kind: 'slug', pellets: 1, pmass: 28, mv: 430, price: 22, box: 10, for: 'Sanglier en battue (< 50 m)' },
+    c20_p7:   { name: 'Cal.20 plomb n°7', cal: 'c20', kind: 'shot', pellets: 250, pmass: 0.1, mv: 390, price: 10, box: 25, for: 'Bécasse, perdrix' },
+    c20_p5:   { name: 'Cal.20 plomb n°5', cal: 'c20', kind: 'shot', pellets: 170, pmass: 0.15, mv: 390, price: 12, box: 25, for: 'Faisan, lièvre' },
+    r22:      { name: '.22 LR 40 gr', cal: 'r22', kind: 'bullet', mass: 2.6, mv: 380, bc: 0.12, price: 6, box: 50 },
+    r243:     { name: '.243 Win 95 gr', cal: 'r243', kind: 'bullet', mass: 6.2, mv: 900, bc: 0.39, price: 32, box: 20 },
+    r270:     { name: '.270 Win 130 gr', cal: 'r270', kind: 'bullet', mass: 8.4, mv: 880, bc: 0.43, price: 38, box: 20 },
+    r308:     { name: '.308 Win 150 gr', cal: 'r308', kind: 'bullet', mass: 9.7, mv: 820, bc: 0.41, price: 36, box: 20 },
+    r3006:    { name: '.30-06 165 gr', cal: 'r3006', kind: 'bullet', mass: 10.7, mv: 850, bc: 0.45, price: 40, box: 20 },
+    r93:      { name: '9,3x74R 286 gr', cal: 'r93', kind: 'bullet', mass: 18.5, mv: 700, bc: 0.38, price: 75, box: 20 },
+    r300:     { name: '.300 WM 180 gr', cal: 'r300', kind: 'bullet', mass: 11.7, mv: 920, bc: 0.5, price: 58, box: 20 },
+    r65:      { name: '6,5 Creedmoor 140 gr', cal: 'r65', kind: 'bullet', mass: 9.1, mv: 830, bc: 0.6, price: 48, box: 20 },
+    r4570:    { name: '.45-70 300 gr', cal: 'r4570', kind: 'bullet', mass: 19.4, mv: 560, bc: 0.2, price: 52, box: 20 },
+    fleche:   { name: 'Flèche carbone lame de chasse', cal: 'fleche', kind: 'arrow', mass: 28, mv: 95, bc: 0.9, price: 15, box: 6 },
+  };
 
-  // ------------------------------------------------------------------ MOMENT DE LA JOURNÉE
-  const times = [
-    { id: 'aube', name: 'Aube', icon: '🌅', level: 1, sunElev: 6, sunAz: 100, xp: 1.1,
-      sky: { top: '#3b5a8f', horizon: '#f2a26a', sun: '#ffb070' }, sunI: 1.4, hemi: 0.55, flocks: 1.3 },
-    { id: 'jour', name: 'Journée', icon: '🌞', level: 1, sunElev: 42, sunAz: 160, xp: 1.0,
-      sky: { top: '#3f7ad0', horizon: '#b8d4ea', sun: '#fff4e0' }, sunI: 2.4, hemi: 0.8, flocks: 1.0 },
-    { id: 'crepuscule', name: 'Crépuscule', icon: '🌇', level: 3, sunElev: 3, sunAz: 255, xp: 1.15,
-      sky: { top: '#2a2f5f', horizon: '#e8683a', sun: '#ff7a3a' }, sunI: 1.2, hemi: 0.45, flocks: 1.4 },
-    { id: 'nuit', name: 'Nuit de pleine lune', icon: '🌕', level: 6, sunElev: 35, sunAz: 200, xp: 1.4, night: true,
-      sky: { top: '#0a1024', horizon: '#34466a', sun: '#b8ccff' }, sunI: 0.7, hemi: 0.4, flocks: 0.9 },
-  ];
+  const chokes = {
+    cyl:  { name: 'Lisse (Cylindrique)', spread: 1.35 },
+    imp:  { name: '¼ (Improved)', spread: 1.15 },
+    mod:  { name: '½ (Modified)', spread: 1.0 },
+    full: { name: 'Full', spread: 0.72 },
+  };
+
+  const optics = {
+    none:   { name: 'Organes de visée', zoom: [1], price: 0 },
+    reddot: { name: 'Point rouge', zoom: [1], price: 380, reticle: 'dot', desc: 'Vision ouverte, idéal en battue.' },
+    s16:    { name: 'Lunette 1-6x24', zoom: [1, 2, 4, 6], price: 750, reticle: 'duplex', desc: 'Battue et affût en forêt.' },
+    s39:    { name: 'Lunette 3-9x42', zoom: [3, 5, 7, 9], price: 620, reticle: 'duplex', desc: 'La lunette d\'approche classique.' },
+    s416:   { name: 'Lunette 4-16x50', zoom: [4, 8, 12, 16], price: 1450, reticle: 'mildot', desc: 'Montagne et longue distance, réticule mildot.' },
+    s525:   { name: 'Lunette 5-25x56', zoom: [5, 10, 18, 25], price: 2900, reticle: 'mildot', desc: 'Tir lointain extrême.' },
+    night:  { name: 'Lunette 3-12x56 « Crépuscule »', zoom: [3, 6, 9, 12], price: 1900, reticle: 'duplex', desc: 'Objectif 56 mm : très lumineuse pour l\'affût.', lowlight: true },
+  };
+
+  const dogs = {
+    none:      { name: 'Sans chien', price: 0 },
+    labrador:  { name: 'Labrador retriever', role: 'retriever', price: 900, color: '#d9b878', desc: 'Rapporte le gibier tombé, même dans l\'eau.' },
+    epagneul:  { name: 'Épagneul breton', role: 'pointer', price: 1100, color: '#e8e0d0', spots: '#b25a2a', desc: 'Chien d\'arrêt : marque le petit gibier caché, le lève sur ordre et rapporte.' },
+    setter:    { name: 'Setter anglais', role: 'pointer', price: 1400, color: '#f2efe8', spots: '#3a3a3a', desc: 'Grande quête, arrêt ferme à longue distance. Roi de la bécasse.', range: 1.5 },
+    beagle:    { name: 'Beagle', role: 'tracker', price: 700, color: '#c58a4a', spots: '#f4efe4', desc: 'Chien courant : suit la voie du gibier blessé en donnant de la voix.' },
+    teckel:    { name: 'Teckel « chien de rouge »', role: 'tracker', price: 1300, color: '#5a3a22', desc: 'Spécialiste de la recherche au sang, ne lâche jamais une piste.', range: 1.4 },
+    jagd:      { name: 'Jagdterrier', role: 'tracker', price: 950, color: '#1e1a18', spots: '#8a5a3a', desc: 'Petit teigneux de battue, tient le sanglier au ferme.' },
+  };
+
+  const equipment = {
+    camo:      { name: 'Tenue camouflage forêt', price: 420, effect: 'Visibilité -30 %', vis: 0.7 },
+    camoNeige: { name: 'Tenue de montagne', price: 650, effect: 'Visibilité -25 %, endurance +20 % en pente', vis: 0.75, mountain: true },
+    waders:    { name: 'Waders', price: 180, effect: 'Marche dans l\'eau sans ralentir', waders: true },
+    jumelles:  { name: 'Jumelles 10x42', price: 350, effect: 'Observation x10', binoc: 10 },
+    telemetre: { name: 'Jumelles télémètre 10x42 LRF', price: 1200, effect: 'Distance exacte et angle de tir', binoc: 10, lrf: true },
+    baton:     { name: 'Bâton de pirsch', price: 160, effect: 'Stabilité debout +40 %', sway: 0.6 },
+    bipied:    { name: 'Bipied', price: 220, effect: 'Stabilité couché +50 %', bipod: 0.5 },
+    appeauCanard: { name: 'Appeau colvert', price: 60, effect: 'Attire les canards', call: 'colvert' },
+    appeauOie: { name: 'Appeau oie', price: 70, effect: 'Attire les oies', call: 'oie' },
+    appeauCerf:{ name: 'Appeau brame', price: 110, effect: 'Provoque les cerfs au brame', call: 'cerf' },
+    appeauChevreuil: { name: 'Appeau chevreuil (« Buttolo »)', price: 45, effect: 'Attire les brocards', call: 'chevreuil' },
+    appeauRenard: { name: 'Appeau renard (cri du lièvre)', price: 40, effect: 'Attire renards et coyotes', call: 'renard' },
+    appelants: { name: '12 appelants canards', price: 240, effect: 'Formes flottantes qui attirent les vols', decoys: 12 },
+    cartouchiere: { name: 'Cartouchière', price: 90, effect: 'Recharge 30 % plus rapide', reload: 0.7 },
+    sacGibier: { name: 'Grand sac à gibier', price: 130, effect: 'Prime de +10 % à la vente', sell: 1.1 },
+    couteau:   { name: 'Couteau d\'éviscération', price: 80, effect: 'Prise en charge plus rapide des animaux', dress: 0.5 },
+    silencieux:{ name: 'Modérateur de son', price: 780, effect: 'Bruit de tir carabine -60 %', suppressor: 0.4 },
+    thermos:   { name: 'Thermos & repas', price: 25, effect: 'Endurance max +15 %', stamina: 1.15 },
+    agrainage: { name: 'Seau d\'agrainage (maïs)', price: 35, effect: 'Attire les sangliers à l\'affût', bait: true, consumable: true },
+  };
+
+  // ------------------------------------------------------------------ TERRITOIRES
+  const maps = {
+    camp:     { name: 'Camp d\'entraînement', biome: 'plaine', size: 900, seed: 11, water: false, snow: 0, autumn: 0.2, desc: 'Stand de tir 50-300 m, fosse de trap, skeet, parcours de chasse et sanglier courant.' },
+    foret:    { name: 'Forêt de Chambord', biome: 'foret', size: 1600, seed: 21, water: true, snow: 0, autumn: 0.7, desc: 'Chênes, hêtres et pins ; clairières, étang et miradors. Cerf, chevreuil, sanglier, daim.' },
+    plaine:   { name: 'Plaine de Beauce', biome: 'plaine', size: 1600, seed: 33, water: false, snow: 0, autumn: 0.4, desc: 'Chaumes, betteraves, haies et bosquets. Faisan, perdrix, lièvre, lapin, renard, pigeons.' },
+    marais:   { name: 'Marais de Brière', biome: 'marais', size: 1500, seed: 45, water: true, snow: 0, autumn: 0.5, desc: 'Roselières, plans d\'eau et huttes. Colvert, sarcelle, oie cendrée.' },
+    montagne: { name: 'Massif des Écrins', biome: 'montagne', size: 2000, seed: 58, water: false, snow: 0.6, autumn: 0.3, desc: 'Alpages, éboulis et arêtes. Chamois, mouflon (bouquetin protégé).' },
+    boreal:   { name: 'Forêt boréale (Québec)', biome: 'boreal', size: 2000, seed: 71, water: true, snow: 0.3, autumn: 0.9, desc: 'Épinettes noires, lacs et tourbières. Orignal, wapiti, ours noir, coyote.' },
+  };
 
   // ------------------------------------------------------------------ MODES
-  const modes = [
-    { id: 'classique', name: 'Chasse classique', icon: '🦆', level: 1, xp: 1.0,
-      desc: '3 minutes pour réaliser le meilleur tableau de chasse.' },
-    { id: 'libre', name: 'Chasse libre', icon: '🌿', level: 1, xp: 0.5,
-      desc: 'Pas de chrono, munitions illimitées. Explorez et chassez à votre rythme.' },
-    { id: 'chrono', name: 'Contre-la-montre', icon: '⏱️', level: 2, xp: 1.1,
-      desc: '60 s au départ, chaque prise ajoute du temps. Tenez le plus longtemps possible !' },
-    { id: 'balltrap', name: 'Ball-trap', icon: '🎯', level: 3, xp: 1.0,
-      desc: '25 plateaux d\'argile lancés depuis les fosses. Doublés en fin de série.' },
-    { id: 'reglementee', name: 'Chasse réglementée', icon: '📜', level: 5, xp: 1.3,
-      desc: 'Respectez les quotas et les espèces protégées. 3 infractions = permis retiré.' },
-    { id: 'survie', name: 'Survie — Grande migration', icon: '🔥', level: 7, xp: 1.4,
-      desc: 'Des vagues de plus en plus nombreuses. Prélevez 60 % de chaque vague ou perdez une vie.' },
-  ];
+  // spawn: { espèce: poids } ; hours: [début, fin] ; duration: heures de jeu ; tscale: minutes de jeu / minute réelle
+  const modes = {
+    lobby:    { name: 'Camp d\'entraînement', map: 'camp', icon: '🎯', level: 1, licence: 0, hours: [10, 18], duration: 0, tscale: 6, desc: 'Entraînement libre carabine et fusil : stand 50-300 m, sanglier courant, fosse de trap, skeet, parcours de chasse. Armurerie et chenil.', weapons: 'all', spawn: {}, training: true },
+    approche: { name: 'Chasse à l\'approche', map: 'foret', icon: '🦌', level: 1, licence: 120, hours: [6.5, 11], duration: 4.5, tscale: 12, desc: 'Pirsch en forêt à l\'aube. Progressez face au vent, repérez et approchez cerfs, chevreuils et sangliers pour un tir propre à moins de 150 m.', weapons: 'rifle', spawn: { chevreuil: 5, chevrette: 5, cerf: 2, biche: 3, sanglier: 2, laie: 2, marcassin: 1, daim: 2, renard: 2 }, quota: { cerf: 1, sanglier: 2, chevreuil: 2, daim: 1, biche: 1, chevrette: 1, laie: 1, renard: 3 } },
+    affut:    { name: 'Affût au mirador', map: 'foret', icon: '🌙', level: 2, licence: 90, hours: [18.5, 23.5], duration: 5, tscale: 12, desc: 'Installé au mirador face à l\'agrainage, attendez la sortie des sangliers au crépuscule. Silence, patience et lunette lumineuse.', weapons: 'rifle', spawn: { sanglier: 5, laie: 5, marcassin: 3, renard: 2, chevreuil: 2, cerf: 1 }, quota: { sanglier: 3, laie: 2, renard: 2, chevreuil: 1, cerf: 1 }, fixed: true },
+    battue:   { name: 'Battue au grand gibier', map: 'foret', icon: '📯', level: 3, licence: 150, hours: [9, 13], duration: 4, tscale: 12, desc: 'Posté sur la ligne, respectez l\'angle de sécurité de 30° pendant que traqueurs et chiens courants rabattent sangliers et cervidés. Trois traques.', weapons: 'battue', spawn: { sanglier: 6, laie: 4, marcassin: 3, cerf: 2, biche: 3, chevreuil: 4, renard: 2 }, quota: { sanglier: 5, laie: 3, cerf: 1, biche: 2, chevreuil: 2, renard: 3 }, battue: true },
+    passee:   { name: 'Passée aux canards', map: 'marais', icon: '🦆', level: 1, licence: 80, hours: [5.5, 9.5], duration: 4, tscale: 12, desc: 'À la hutte au petit matin. Appelants, appeau et labrador pour les vols de colverts, sarcelles et oies. Acier obligatoire.', weapons: 'shotgun', spawn: { colvert: 8, sarcelle: 6, oie: 3, cygne: 1, heron: 1, ragondin: 2 }, quota: { colvert: 8, sarcelle: 10, oie: 3, ragondin: 5 }, water: true },
+    petit:    { name: 'Petit gibier devant soi', map: 'plaine', icon: '🐓', level: 1, licence: 70, hours: [9, 14], duration: 5, tscale: 12, desc: 'Marche en plaine avec un chien d\'arrêt : faisans, perdrix, lièvres et lapins jaillissent des haies. Tir rapide au fusil.', weapons: 'shotgun', spawn: { faisan: 8, perdrix: 6, lievre: 4, lapin: 6, renard: 1, pigeon: 3 }, quota: { faisan: 4, perdrix: 6, lievre: 2, lapin: 6, renard: 2, pigeon: 10 } },
+    becasse:  { name: 'Bécasse au bois', map: 'foret', icon: '🪶', level: 4, licence: 90, hours: [8, 12], duration: 4, tscale: 12, desc: 'La reine des bois : petits fusils, chien d\'arrêt et tirs instantanés entre les branches. Prélèvement maximal : 3.', weapons: 'shotgun', spawn: { becasse: 8, pigeon: 2, lapin: 2, chevreuil: 1 }, quota: { becasse: 3, pigeon: 5, lapin: 3 } },
+    montagne: { name: 'Chasse en montagne', map: 'montagne', icon: '🏔️', level: 5, licence: 260, hours: [7, 13], duration: 6, tscale: 12, desc: 'Approche du chamois et du mouflon en alpage. Longs tirs en pente : compensez l\'angle et le vent. Bouquetin et marmotte protégés.', weapons: 'rifle', spawn: { chamois: 6, mouflon: 5, bouquetin: 2, marmotte: 5, renard: 1 }, quota: { chamois: 2, mouflon: 1, renard: 1 } },
+    arc:      { name: 'Chasse à l\'arc', map: 'foret', icon: '🏹', level: 4, licence: 100, hours: [6.5, 10.5], duration: 4, tscale: 12, desc: 'Silence absolu. Approchez à moins de 30 m d\'un chevreuil ou d\'un sanglier et placez la flèche derrière l\'épaule.', weapons: 'bow', spawn: { chevreuil: 6, chevrette: 4, sanglier: 3, laie: 2, daim: 2, lapin: 3 }, quota: { chevreuil: 2, chevrette: 1, sanglier: 1, laie: 1, daim: 1, lapin: 3 } },
+    nuisibles:{ name: 'Régulation des nuisibles', map: 'plaine', icon: '🦊', level: 2, licence: 40, hours: [17, 22], duration: 5, tscale: 12, desc: 'Renards, corneilles, pigeons et ragondins autour de la ferme. .22 LR ou fusil, appeau renard au crépuscule.', weapons: 'all', spawn: { renard: 5, corneille: 8, pigeon: 8, ragondin: 3, lapin: 4, lievre: 1 }, quota: { renard: 4, corneille: 20, pigeon: 20, ragondin: 6, lapin: 6 } },
+    boreal:   { name: 'Expédition boréale', map: 'boreal', icon: '🍁', level: 7, licence: 900, hours: [6, 12], duration: 6, tscale: 12, desc: 'Orignal au brame, wapiti, ours noir et coyote dans les épinettes du Québec. Gros calibres obligatoires. Trophées de grande valeur.', weapons: 'rifle', spawn: { orignal: 3, wapiti: 4, ours: 2, coyote: 3, lievre: 2 }, quota: { orignal: 1, wapiti: 1, ours: 1, coyote: 3 } },
+    trap:     { name: 'Compétition : Fosse (Trap)', map: 'camp', icon: '🥏', level: 1, licence: 40, duration: 0, tscale: 6, hours: [11, 17], desc: '25 plateaux sur 5 postes, lancés depuis la fosse. 20 € l\'inscription, jusqu\'à 400 € de prix.', weapons: 'shotgun', spawn: {}, clay: 'trap' },
+    skeet:    { name: 'Compétition : Skeet', map: 'camp', icon: '🥏', level: 2, licence: 40, duration: 0, tscale: 6, hours: [11, 17], desc: '25 plateaux, 8 postes, cabanes haute et basse, doublés. Prix jusqu\'à 500 €.', weapons: 'shotgun', spawn: {}, clay: 'skeet' },
+    sporting: { name: 'Compétition : Parcours de chasse', map: 'camp', icon: '🥏', level: 3, licence: 60, duration: 0, tscale: 6, hours: [11, 17], desc: '25 plateaux imitant le gibier : rabbit, battue, sarcelle, croisés, fuyants. Prix jusqu\'à 800 €.', weapons: 'shotgun', spawn: {}, clay: 'sporting' },
+  };
 
-  // XP cumulée nécessaire pour atteindre un niveau
-  const xpForLevel = (lvl) => Math.round(450 * Math.pow(lvl - 1, 1.55));
+  const weather = {
+    beau:      { name: 'Grand beau', cloud: 0.15, fog: 0.0, wind: [1, 4], rain: 0, snow: 0 },
+    voile:     { name: 'Ciel voilé', cloud: 0.5, fog: 0.15, wind: [2, 6], rain: 0, snow: 0 },
+    couvert:   { name: 'Couvert', cloud: 0.9, fog: 0.3, wind: [3, 8], rain: 0, snow: 0 },
+    brume:     { name: 'Brume matinale', cloud: 0.4, fog: 0.85, wind: [0.5, 2], rain: 0, snow: 0 },
+    pluie:     { name: 'Pluie', cloud: 1, fog: 0.5, wind: [4, 10], rain: 1, snow: 0 },
+    neige:     { name: 'Neige', cloud: 1, fog: 0.55, wind: [2, 7], rain: 0, snow: 1 },
+    vent:      { name: 'Grand vent', cloud: 0.6, fog: 0.1, wind: [9, 16], rain: 0, snow: 0 },
+  };
 
-  return { weapons, cartridges, chokes, equipment, species, maps, weathers, times, modes, xpForLevel };
+  const xpForLevel = (l) => Math.round(200 * (l - 1) * (l - 1) * 0.9 + 350 * (l - 1));
+  const levelTitle = (l) => ['Novice', 'Chasseur débutant', 'Chasseur', 'Chasseur confirmé', 'Pisteur', 'Guide', 'Maître chasseur', 'Vénerie d\'élite', 'Légende des bois', 'Grand veneur'][Math.min(9, l - 1)];
+
+  const weaponAllowed = (mode, w) => {
+    const rule = modes[mode].weapons;
+    if (rule === 'all') return true;
+    if (rule === 'rifle') return w.type === 'rifle';
+    if (rule === 'shotgun') return w.type === 'shotgun';
+    if (rule === 'bow') return w.type === 'bow';
+    if (rule === 'battue') return w.type !== 'bow';
+    return true;
+  };
+
+  return { species, weapons, ammo, chokes, optics, dogs, equipment, maps, modes, weather, xpForLevel, levelTitle, weaponAllowed };
 })();

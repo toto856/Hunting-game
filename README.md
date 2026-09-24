@@ -1,47 +1,31 @@
-# PASSÉE — Chasse au gibier d'eau
+# TERRES SAUVAGES — Simulateur de chasse 3D
 
-Jeu de chasse au canard en 3D, à la première personne, qui tourne directement dans le navigateur (Three.js, aucune installation).
+Jeu de chasse réaliste à la première personne qui tourne directement dans le navigateur (Three.js, aucune installation, aucun asset externe : tout est généré procéduralement).
 
 ## Lancer le jeu
 
-Ouvrez simplement `index.html` dans Chrome, Firefox, Edge ou Safari.
-(Optionnel : `python3 -m http.server` puis http://localhost:8000.)
+Ouvrez `index.html` dans Chrome, Firefox, Edge ou Safari (ou `python3 -m http.server` puis http://localhost:8000).
 
 ## Contenu
 
-- **6 territoires à débloquer** : Marais de Camargue, Lac de la Forêt d'Automne, Rivière Gelée (glace + trous d'eau), Toundra du Grand Nord, Fjord Norvégien, Bayou de Louisiane.
-- **11 météos** dont 6 styles de neige : neige légère, gros flocons, poudreuse scintillante, grésil, neige fondante, blizzard — plus pluie, orage (éclairs et tonnerre), brouillard, couvert, grand beau. La neige s'accumule au sol pendant la partie.
-- **4 moments de la journée** : aube, journée, crépuscule, nuit de pleine lune (ciel étoilé).
-- **6 modes** : Chasse classique, Chasse libre, Contre-la-montre, Ball-trap, Chasse réglementée (quotas + espèces protégées), Survie (vagues de migration).
-- **7 armes** : pompe, juxtaposé, superposé cal.20, semi-automatique, carabine à lunette, Magnum cal.10, superposé « Or Royal ».
-- **5 types de cartouches**, **chokes** interchangeables et **équipement** : appeau, jumelles, cartouchière, appelants, camouflage, labrador rapporteur, waders.
-- **11 espèces** (colvert, sarcelle, pilet, mandarin, branchu, eider, oie cendrée, bernache… et deux espèces protégées à ne pas tirer).
-- Progression : XP, niveaux, argent, armurerie, carnet de chasse et records (sauvegarde locale dans le navigateur).
+- **Camp d'entraînement (lobby)** : stand carabine 50 → 300 m avec cibles papier notées, gongs acier et sanglier courant ; fosse de trap, skeet et parcours de chasse en accès libre ; armurerie, chenil et bureau des chasses.
+- **11 modes** : approche, affût au mirador (nuit, agrainage), battue (3 traques, rabatteurs, chiens courants, angle de sécurité de 30°), passée aux canards (hutte, appelants, appeau), petit gibier devant soi (chien d'arrêt), bécasse au bois, chasse en montagne, chasse à l'arc, régulation des nuisibles, expédition boréale (orignal, wapiti, ours), plus 3 compétitions de ball-trap (fosse, skeet, parcours) avec prix en argent.
+- **6 territoires** : forêt de Chambord, plaine de Beauce, marais de Brière, massif des Écrins, forêt boréale du Québec, camp d'entraînement.
+- **26 espèces** dont des espèces protégées (bouquetin, cygne, héron, marmotte) et des marcassins rayés à ne pas tirer : amendes et perte d'XP.
+- **17 armes** (fusils à pompe, superposés, juxtaposé, semi-auto, cal.20, fusil de trap, carabines .22 LR → .300 Win Mag, 6,5 Creedmoor, express 9,3x74R, lever-action .45-70, arc à poulies), **17 munitions**, 4 chokes, 6 optiques (point rouge, 1-6x, 3-9x, 4-16x, 5-25x, lunette crépusculaire), zéro réglable.
+- **6 chiens** : labrador (rapport), épagneul breton et setter (arrêt et lever), beagle, teckel et jagdterrier (recherche au sang, voie).
+- **Équipement** : camouflage, waders, jumelles télémètre, bâton de pirsch, bipied, appeaux (canard, oie, brame, chevreuil, renard), appelants, cartouchière, modérateur de son…
+- Économie : licences par mode, valeur des trophées selon l'espèce, le placement du tir (cœur/poumons, tête, ventre…), la distance, la médaille (bronze/argent/or), amendes (tir dans la ligne, plombs sur grand gibier, calibre non conforme, quota, espèce protégée).
+- Progression : XP, 10 niveaux qui débloquent les modes, carnet de chasse avec records par espèce, sauvegarde locale.
 
 ## Réalisme
 
-- Balistique simulée plomb par plomb : temps de vol (il faut donner de l'avance), traînée, gravité, dérive au vent, perte d'énergie au-delà de la portée utile.
-- Canards qui volent en groupe (en V pour les oies), tournent au-dessus des étangs, se posent, barbotent, et s'envolent si vous approchez ou tirez.
-- Respiration et tremblement en visée (Maj pour bloquer sa respiration), recul, réarmement à la pompe, ouverture des fusils basculants, douilles éjectées.
-- Discrétion : l'affût, la position accroupie, le camouflage et la nuit réduisent la distance à laquelle les canards vous repèrent.
-- Sons entièrement synthétisés : coups de feu avec écho selon le relief, cancanements spatialisés, vent, pluie.
+- Balistique simulée en temps réel : gravité, traînée (coefficient balistique), dérive au vent, temps de vol (avance sur le gibier), gerbe de plombs par choke, énergie à l'impact.
+- Zones vitales (cœur/poumons, tête, cou, ventre, arrière-main, pattes) : mort instantanée, animal mortellement touché qui court avant de tomber, ou blessé qui laisse une piste de sang à suivre avec le chien.
+- Sens des animaux : vue (posture, camouflage, mouvement, couvert), ouïe (bruit de vos pas selon le sol), odorat porté par le vent. Hardes, meneuses, fuite en groupe, sangliers et ours qui chargent quand ils sont blessés.
+- Chasseur : endurance, rythme cardiaque, blocage du souffle, tremblement selon la posture (debout, accroupi, couché, mirador), bâton et bipied.
+- Monde : cycle jour/nuit avec soleil, lune et étoiles, 7 météos (brume, pluie, neige, grand vent…), arbres et herbes animés par le vent, eau, ombres dynamiques, forêts d'automne, feuilles qui tombent.
 
 ## Commandes
 
-| Touche | Action |
-| --- | --- |
-| ZQSD / WASD | Se déplacer |
-| Souris | Regarder |
-| Clic gauche / droit | Tirer / Épauler |
-| Maj | Courir (en visée : retenir sa respiration) |
-| C ou Ctrl | S'accroupir |
-| Espace | Sauter |
-| R | Recharger |
-| 1, 2, molette | Changer d'arme |
-| F | Appeau |
-| B | Jumelles |
-| E | Ramasser le gibier |
-| Tab | Tableau de chasse |
-| Échap / P | Pause |
-
-Sur téléphone ou tablette, des commandes tactiles s'affichent automatiquement (joystick, zone de visée, boutons).
+Souris : regarder · Clic gauche : tir · Clic droit : viser · Molette : zoom · ZQSD/WASD : marcher · Maj : courir · C : accroupi · Z/X : couché · Espace : sauter · H : bloquer le souffle · R : recharger · E : agir / PULL / prélever · Q : appeau · F : chien · B : jumelles · M : carte · L : zéro lunette · K : choke · 1/2 : changer d'arme · T : munitions · Tab : menu · Échap : pause. Contrôles tactiles sur mobile.

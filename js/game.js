@@ -1,673 +1,204 @@
-// Boucle principale, sessions de chasse, modes de jeu, score et progression.
+// Boucle de jeu : session de chasse, interactions, scoring, prélèvements, effets, HUD.
 'use strict';
-
-(() => {
-  const { rand, randInt, pick, clamp, fmtTime, chance } = DH.util;
-
-  // ------------------------------------------------------------------ PLATEAU D'ARGILE
-  const clayGeo = new THREE.CylinderGeometry(0.055, 0.045, 0.024, 18);
-  const clayMat = new THREE.MeshLambertMaterial({ color: '#ff5a14' });
-  class Clay {
-    constructor(game, pos, vel) {
-      this.game = game;
-      this.mesh = new THREE.Mesh(clayGeo, clayMat);
-      this.mesh.castShadow = true;
-      this.mesh.scale.setScalar(1.25);
-      game.scene.add(this.mesh);
-      this.pos = pos.clone();
-      this.vel = vel.clone();
-      this.alive = true;
-      this.radius = 0.2;
-      this.t = 0;
-      this.center = new THREE.Vector3();
-    }
-    hitCenter() { return this.center.copy(this.pos); }
-    hit(dmg, vel) {
-      if (!this.alive) return;
-      this.alive = false;
-      this.broken = true;
-      this.game.fx.clayBurst(this.pos, this.vel);
-      DH.audio.clayBreak(this.pos);
-      this.game.scene.remove(this.mesh);
-      return true;
-    }
-    update(dt) {
-      if (!this.alive) return;
-      this.t += dt;
-      this.vel.y -= 9.8 * dt * 0.75; // portance du plateau
-      this.vel.multiplyScalar(1 - 0.22 * dt);
-      this.pos.addScaledVector(this.vel, dt);
-      this.mesh.position.copy(this.pos);
-      this.mesh.rotation.set(0.15, this.t * 25, 0.1);
-      const g = this.game.world.groundAt(this.pos.x, this.pos.z);
-      if (this.pos.y < Math.max(g, this.game.world.heightAt(this.pos.x, this.pos.z) < 0 ? 0 : g)) {
-        this.alive = false;
-        this.missed = true;
-        if (this.game.world.heightAt(this.pos.x, this.pos.z) < 0 && !this.game.world.isIce(this.pos.x, this.pos.z)) this.game.fx.splash(this.pos, 0.3);
-        this.game.scene.remove(this.mesh);
-      }
-    }
-    dispose() { this.game.scene.remove(this.mesh); }
+HG.Game = class Game {
+  constructor(canvas) {
+    this.canvas = canvas; const S = HG.save.get(); this.save = S;
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    this.renderer.outputEncoding = THREE.sRGBEncoding; this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.0; this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.applyQuality(S.options.quality);
+    this.scene = new THREE.Scene(); this.baseFov = S.options.fov || 70; this.camera = new THREE.PerspectiveCamera(this.baseFov, 1, 0.08, 6000); this.scene.add(this.camera);
+    this.ui = new HG.UI(this); this.fx = []; this.time = 0; this.running = false; this.paused = false; this.mode = null; this.clock = new THREE.Clock(); this.ctx = {};
+    window.addEventListener('resize', () => this.resize()); this.resize();
+    this.animate = this.animate.bind(this); requestAnimationFrame(this.animate);
   }
-
-  // ------------------------------------------------------------------ MODES
-  const MODES = {
-    classique: {
-      ducks: { interval: 5, maxActive: 26 },
-      setup(g) { g.timeLeft = 180; },
-      update(g, dt) {
-        g.timeLeft -= dt;
-        if (g.timeLeft <= 0) g.finish('Fin de la chasse !');
-      },
-      hud: (g) => `⏱ ${fmtTime(g.timeLeft)}`,
-    },
-    libre: {
-      ducks: { interval: 8, maxActive: 22 },
-      unlimited: true,
-      setup(g) { g.timeLeft = Infinity; },
-      update() {},
-      hud: (g) => `🌿 ${fmtTime(g.clock)}`,
-    },
-    chrono: {
-      ducks: { interval: 4, maxActive: 30 },
-      setup(g) { g.timeLeft = 60; },
-      update(g, dt) {
-        g.timeLeft -= dt;
-        if (g.timeLeft <= 0) g.finish('Temps écoulé !');
-      },
-      onKill(g, duck, info) {
-        if (duck.spec.protected) {
-          g.timeLeft -= 10;
-          g.ui.floatMsg('-10 s', 'bad');
-          return;
-        }
-        const add = 4 + (info.doubled ? 3 : 0) + (duck.spec.rare ? 5 : 0);
-        g.timeLeft += add;
-        g.ui.floatMsg(`+${add} s`, 'good');
-      },
-      hud: (g) => `⏱ ${fmtTime(g.timeLeft)}`,
-    },
-    reglementee: {
-      ducks: { interval: 6.5, maxActive: 24 },
-      setup(g) {
-        g.timeLeft = 300;
-        g.infractions = 0;
-        // Quotas : les 3 espèces chassables les plus fréquentes du territoire
-        const sp = Object.entries(g.map.species).filter(([k]) => !DH.data.species[k].protected).sort((a, b) => b[1] - a[1]).slice(0, 3);
-        g.quota = {};
-        sp.forEach(([k], i) => (g.quota[k] = [3, 2, 2][i]));
-        g.ui.centerMsg('Quotas : ' + Object.entries(g.quota).map(([k, n]) => `${n} ${DH.data.species[k].name}`).join(' · '), 6);
-      },
-      update(g, dt) {
-        g.timeLeft -= dt;
-        if (g.timeLeft <= 0) g.finish('Fin de la journée de chasse');
-        else if (Object.entries(g.quota).every(([k, n]) => (g.bag[k] || 0) >= n)) g.finish('Quotas atteints !', 800);
-      },
-      onKill(g, duck) {
-        const k = duck.specId;
-        if (duck.spec.protected) {
-          g.infract('Espèce protégée abattue !');
-        } else if (!(k in g.quota)) {
-          g.infract('Espèce hors quota : ' + duck.spec.name);
-        } else if (g.bag[k] > g.quota[k]) {
-          g.infract('Quota dépassé : ' + duck.spec.name);
-        }
-      },
-      hud: (g) => `⏱ ${fmtTime(g.timeLeft)} · ⚠ ${g.infractions}/3`,
-      side: (g) => Object.entries(g.quota).map(([k, n]) => `<div class="${(g.bag[k] || 0) >= n ? 'ok' : ''}">${DH.data.species[k].name} <b>${g.bag[k] || 0}/${n}</b></div>`).join(''),
-    },
-    survie: {
-      ducks: { enabled: false },
-      setup(g) {
-        g.lives = 3;
-        g.wave = 0;
-        g.waveState = 'break';
-        g.waveTimer = 3;
-      },
-      update(g, dt) {
-        if (g.waveState === 'break') {
-          g.waveTimer -= dt;
-          if (g.waveTimer <= 0) {
-            g.wave++;
-            g.waveState = 'run';
-            g.waveTotal = 5 + g.wave * 3;
-            g.waveSpawned = 0;
-            g.waveKilled = 0;
-            g.waveEscaped = 0;
-            g.waveSpawnT = 0;
-            g.ducks.speedMul = 1 + g.wave * 0.05;
-            // Munitions de renfort
-            for (const gun of g.weapons.guns) if (gun.reserve !== Infinity) gun.reserve += Math.ceil(g.waveTotal * 1.6);
-            g.ui.centerMsg(`Vague ${g.wave} — ${g.waveTotal} oiseaux`, 2.5);
-            DH.audio.ding();
-          }
-        } else {
-          g.waveSpawnT -= dt;
-          if (g.waveSpawned < g.waveTotal && g.waveSpawnT <= 0) {
-            g.waveSpawnT = rand(2, 4) / (1 + g.wave * 0.08);
-            const f = g.ducks.spawnFlock({ noLand: true, wave: g.wave, count: Math.min(g.waveTotal - g.waveSpawned, randInt(2, 5)) });
-            g.waveSpawned += f.members.length;
-          }
-          if (g.waveSpawned >= g.waveTotal && g.waveKilled + g.waveEscaped >= g.waveTotal) {
-            const ratio = g.waveKilled / g.waveTotal;
-            if (ratio < 0.6) {
-              g.lives--;
-              DH.audio.buzz();
-              g.ui.centerMsg(`Vague ratée (${Math.round(ratio * 100)} %) — une vie perdue`, 3);
-              if (g.lives <= 0) return g.finish(`Épuisé à la vague ${g.wave}`);
-            } else {
-              const bonus = Math.round(200 * g.wave * ratio);
-              g.addScore(bonus);
-              g.ui.centerMsg(`Vague ${g.wave} réussie ! +${bonus}`, 3);
-            }
-            g.waveState = 'break';
-            g.waveTimer = 5;
-          }
-        }
-      },
-      onKill(g, duck) { if (duck.wave === g.wave) g.waveKilled++; },
-      onEscape(g, duck) { if (duck.wave === g.wave) g.waveEscaped++; },
-      hud: (g) => `❤ ${'●'.repeat(Math.max(0, g.lives))}${'○'.repeat(3 - Math.max(0, g.lives))} · Vague ${g.wave}`,
-      side: (g) => g.waveState === 'run' ? `<div>Abattus <b>${g.waveKilled}</b> / ${g.waveTotal}</div><div>Échappés <b>${g.waveEscaped}</b></div>` : '',
-    },
-    balltrap: {
-      ducks: { enabled: false },
-      setup(g) {
-        g.player.frozenMove = true;
-        g.clays = [];
-        g.claysLaunched = 0;
-        g.claysHit = 0;
-        g.clayTotal = 25;
-        g.pullT = 3;
-        g.ui.centerMsg('Ball-trap : 25 plateaux — les 10 derniers en doublés', 3.5);
-      },
-      update(g, dt) {
-        for (const c of g.clays) c.update(dt);
-        const flying = g.clays.some((c) => c.alive);
-        if (!flying) {
-          g.pullT -= dt;
-          if (g.claysLaunched >= g.clayTotal) {
-            if (g.pullT < -1.5) g.finish('Série terminée');
-            return;
-          }
-          if (g.pullT <= 0) {
-            g.pullT = rand(2, 3.2);
-            const dbl = g.claysLaunched >= 15;
-            const n = dbl ? 2 : 1;
-            for (let i = 0; i < n; i++) g.launchClay(i);
-            g.ui.floatMsg('Pull !', 'neutral');
-          }
-        }
-        g.clays = g.clays.filter((c) => c.alive);
-      },
-      hud: (g) => `🎯 ${g.claysHit} / ${g.claysLaunched} (${g.clayTotal})`,
-    },
-  };
-
-  // ------------------------------------------------------------------ JEU
-  DH.Game = class Game {
-    constructor() {
-      this.canvas = document.getElementById('game');
-      this.opts = DH.save.get().options;
-      this.initRenderer();
-      this.scene = new THREE.Scene();
-      this.camera = new THREE.PerspectiveCamera(this.opts.fov, innerWidth / innerHeight, 0.03, 1600);
-      this.scene.add(this.camera);
-      this.input = new DH.Input(this.canvas);
-      this.ui = DH.ui;
-      this.state = 'menu';
-      this.clock = 0;
-      this.last = performance.now();
-      this.menuT = 0;
-      window.addEventListener('resize', () => this.resize());
-      this.input.onLockChange = (locked) => {
-        if (this.state === 'playing' && !locked && !this.input.isTouch && !this.input.noLock) this.pause();
-        if (this.state === 'paused' && locked) this.resume();
-      };
-      this.input.onLockError = () => {
-        if (this.state === 'paused') this.resume();
-      };
-      window.addEventListener('keydown', (e) => {
-        if (e.code === 'Escape' && this.state === 'playing' && (this.input.isTouch || !this.input.locked)) this.pause();
-        if ((e.code === 'KeyP') && this.state === 'playing') {
-          this.input.exitLock();
-          this.pause();
-        }
-      });
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden && this.state === 'playing') {
-          this.input.exitLock();
-          this.pause();
-        }
-      });
-      this.buildMenuWorld();
-      this.renderer.setAnimationLoop((t) => this.loop(t));
-    }
-
-    initRenderer() {
-      const q = this.opts.quality;
-      if (this.renderer) {
-        this.renderer.dispose();
-      }
-      this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: q !== 'low', powerPreference: 'high-performance' });
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q === 'high' ? 2 : q === 'medium' ? 1.25 : 0.85));
-      this.renderer.setSize(innerWidth, innerHeight);
-      this.renderer.shadowMap.enabled = q !== 'low';
-      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      this.renderer.outputEncoding = THREE.sRGBEncoding;
-      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      this.renderer.toneMappingExposure = 1.05;
-    }
-
-    setQuality(q) {
-      if (q === this.opts.quality) return;
-      this.opts.quality = q;
-      DH.save.write();
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q === 'high' ? 2 : q === 'medium' ? 1.25 : 0.85));
-      this.renderer.shadowMap.enabled = q !== 'low';
-      if (this.state === 'menu') this.buildMenuWorld();
-    }
-
-    resize() {
-      this.camera.aspect = innerWidth / innerHeight;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(innerWidth, innerHeight);
-    }
-
-    hasEquip(id) {
-      return DH.save.get().equipment.includes(id);
-    }
-
-    // Décor animé derrière les menus
-    buildMenuWorld(mapId) {
-      this.disposeSession();
-      if (this.menuWorld) this.menuWorld.dispose();
-      const s = DH.save.get();
-      const lvl = DH.save.level();
-      const map = DH.data.maps.find((m) => m.id === (mapId || s.last.map) && m.level <= lvl) || DH.data.maps[0];
-      const weather = DH.data.weathers.find((w) => w.id === map.weather) || DH.data.weathers[0];
-      const time = DH.data.times.find((t) => t.id === 'aube');
-      this.menuWorld = new DH.World(this.scene, { map, weather, time, quality: this.opts.quality === 'high' ? 'medium' : 'low' });
-      this.menuMap = map;
-    }
-
-    // ================================================================ SESSION
-    startHunt(cfg) {
-      const s = DH.save.get();
-      s.last = Object.assign(s.last, cfg);
-      DH.save.write();
-      DH.audio.init();
-      DH.audio.setVolume(this.opts.volume);
-      this.input.requestLock();
-      this.ui.showLoading(true);
-      setTimeout(() => {
-        try {
-          this.buildSession(cfg);
-          this.ui.showLoading(false);
-          this.ui.showHud(true);
-          this.state = 'playing';
-          this.input.enabled = true;
-          if (!this.input.isTouch && !this.input.locked && !this.input.noLock) this.pause();
-        } catch (e) {
-          console.error(e);
-          this.ui.showLoading(false);
-          this.ui.toast('Erreur de chargement : ' + e.message);
-          this.toMenu();
-        }
-      }, 40);
-    }
-
-    buildSession(cfg) {
-      if (this.menuWorld) {
-        this.menuWorld.dispose();
-        this.menuWorld = null;
-      }
-      this.disposeSession();
-      this.cfg = cfg;
-      this.map = DH.data.maps.find((m) => m.id === cfg.map);
-      this.modeDef = DH.data.modes.find((m) => m.id === cfg.mode);
-      this.mode = MODES[cfg.mode];
-      const wid = cfg.weather === 'auto' ? this.map.weather : cfg.weather;
-      this.weather = DH.data.weathers.find((w) => w.id === wid);
-      this.time = DH.data.times.find((t) => t.id === cfg.time);
-      const sp = this.map.spawn;
-      const clearZones = [];
-      if (cfg.mode === 'balltrap') {
-        this.traps = [{ x: sp.x - 16, z: sp.z - 20 }, { x: sp.x, z: sp.z - 25 }, { x: sp.x + 16, z: sp.z - 20 }];
-        for (const t of this.traps) clearZones.push({ x: t.x, z: t.z, r: 7, flat: true });
-        clearZones.push({ x: sp.x, z: sp.z - 45, r: 38 });
-      }
-      this.world = new DH.World(this.scene, { map: this.map, weather: this.weather, time: this.time, quality: this.opts.quality, clearZones });
-      if (cfg.mode === 'balltrap') {
-        this.world.blind.visible = false;
-        this.world.boxes = [];
-        this.world.buildTrapRange(new THREE.Vector3(sp.x, 0, sp.z), this.traps);
-      }
-      this.fx = new DH.FX(this.scene, this.world);
-      this.player = new DH.Player(this);
-      this.clock = 0;
-      this.score = 0;
-      this.bag = {};
-      this.kills = [];
-      this.shots = 0;
-      this.hitShots = 0;
-      this.retrieved = 0;
-      this.retrieveMoney = 0;
-      this.streak = 0;
-      this.lastKillT = -10;
-      this.callCd = 0;
-      this.binoculars = false;
-      this.infractions = 0;
-      this.longest = 0;
-      this.finished = false;
-      this.frameQuacks = 0;
-      this.protectedKills = 0;
-      const md = this.mode.ducks || {};
-      this.ducks = new DH.DuckManager(this, {
-        interval: md.interval, maxActive: md.maxActive, enabled: md.enabled,
-        dog: this.hasEquip('dog') && cfg.mode !== 'balltrap',
-      });
-      this.weapons = new DH.Weapons(this, { loadout: cfg.loadout, cartridge: cfg.cartridge, choke: this.hasEquip('chokes') ? cfg.choke : 'mod', unlimited: !!this.mode.unlimited });
-      if (cfg.mode !== 'balltrap' && cfg.mode !== 'survie') {
-        if (this.hasEquip('decoys')) {
-          const c = this.world.randomWaterPoint(sp.x, sp.z - 30, 22, 0.4);
-          if (c) this.ducks.placeDecoys(c, 8);
-        }
-        this.ducks.spawnSwimming(randInt(3, 6), new THREE.Vector3(sp.x, 0, sp.z - 40));
-        this.ducks.spawnSwimming(randInt(2, 5), new THREE.Vector3(sp.x, 0, sp.z - 40));
-        for (let i = 0; i < 3; i++) this.ducks.spawnSwimming(randInt(2, 6));
-        this.ducks.spawnFlock();
-        this.ducks.spawnFlock();
-        this.ducks.spawnT = 3;
-      }
-      this.mode.setup(this);
-      DH.audio.setEcho(this.map.echo);
-      DH.audio.startAmbient(this.weather, this.time);
-      this.camera.fov = this.opts.fov;
-      this.camera.updateProjectionMatrix();
-      this.ui.initHud(this);
-    }
-
-    disposeSession() {
-      if (!this.world) return;
-      if (this.clays) this.clays.forEach((c) => c.dispose());
-      this.clays = null;
-      this.weapons.dispose();
-      this.ducks.dispose();
-      this.fx.dispose();
-      this.world.dispose();
-      this.world = null;
-      DH.audio.stopAmbient();
-    }
-
-    getTargets() {
-      if (this.cfg.mode === 'balltrap') return this.clays || [];
-      return this.ducks.targets();
-    }
-
-    launchClay(i) {
-      if (i === 0) this.nextTrap = randInt(0, this.traps.length - 1);
-      else this.nextTrap = (this.nextTrap + randInt(1, this.traps.length - 1)) % this.traps.length;
-      const t = this.traps[this.nextTrap];
-      const sp = this.map.spawn;
-      const pos = new THREE.Vector3(t.x, t.y || this.world.heightAt(t.x, t.z) + 1, t.z);
-      const away = new THREE.Vector3(t.x - sp.x, 0, t.z - sp.z).normalize();
-      const ang = rand(-0.9, 0.9);
-      away.applyAxisAngle(DH.UP, ang);
-      const el = rand(0.3, 0.55);
-      const speed = rand(24, 30);
-      const vel = new THREE.Vector3(away.x * Math.cos(el), Math.sin(el), away.z * Math.cos(el)).multiplyScalar(speed);
-      this.clays.push(new Clay(this, pos, vel));
-      this.claysLaunched++;
-      DH.audio.trapLaunch(pos);
-    }
-
-    // ================================================================ ÉVÉNEMENTS
-    onShot(shot) {
-      this.shots++;
-      DH.save.get().stats.shots++;
-      if (this.cfg.mode !== 'balltrap') this.ducks.alarm(this.player.pos);
-      setTimeout(() => {
-        if (shot.hitCount > 0) this.hitShots++;
-      }, 400);
-    }
-
-    onHit(target, dmg, vel, shot, dist) {
-      if (target instanceof Clay) {
-        if (target.hit(dmg, vel)) {
-          this.claysHit++;
-          const pts = 100 + (dist > 30 ? 50 : 0);
-          this.addScore(pts);
-          DH.save.get().stats.clays++;
-          this.ui.hitMarker(true);
-          this.ui.feed(`Plateau pulvérisé · ${dist.toFixed(0)} m`, pts);
-        }
-        return;
-      }
-      const killed = target.hit(dmg, vel, shot);
-      this.ui.hitMarker(killed);
-      DH.audio.hitMarker();
-    }
-
-    onDuckKilled(duck, shot, flying) {
-      const spec = duck.spec;
-      const dist = shot ? shot.origin.distanceTo(duck.pos) : 0;
-      const st = DH.save.get().stats;
-      st.kills[duck.specId] = (st.kills[duck.specId] || 0) + 1;
-      this.bag[duck.specId] = (this.bag[duck.specId] || 0) + 1;
-      const info = { doubled: false };
-      if (shot) {
-        shot.kills.push(duck);
-        info.doubled = shot.kills.length >= 2;
-      }
-      let pts;
-      if (spec.protected) {
-        pts = spec.pts;
-        this.protectedKills++;
-        st.protectedShot++;
-        DH.audio.buzz();
-        this.ui.feed(`⚠ ${spec.name} — ESPÈCE PROTÉGÉE`, pts, 'bad');
-        this.streak = 0;
-      } else {
-        const distMul = 1 + Math.max(0, dist - 20) / 40;
-        const flyMul = flying ? 1 : 0.5;
-        if (this.clock - this.lastKillT < 3) this.streak++;
-        else this.streak = 1;
-        this.lastKillT = this.clock;
-        const streakMul = Math.min(3, 1 + (this.streak - 1) * 0.25);
-        const dblMul = info.doubled ? 1.5 : 1;
-        const rifleMul = shot && shot.rifle && flying ? 1.5 : 1;
-        pts = Math.round(spec.pts * distMul * flyMul * streakMul * dblMul * rifleMul);
-        let label = `${spec.name} · ${dist.toFixed(0)} m`;
-        if (!flying) label += ' · tir posé';
-        if (rifleMul > 1) label += ' · tir d\'élite';
-        this.ui.feed(label, pts);
-        if (info.doubled) this.ui.centerMsg(shot.kills.length >= 3 ? 'TRIPLÉ !' : 'COUP DOUBLE !', 1.4);
-        else if (this.streak >= 3) this.ui.floatMsg(`Série ×${this.streak}`, 'good');
-        if (dist > this.longest) this.longest = dist;
-        if (dist > st.longest) st.longest = Math.round(dist);
-        if (spec.rare) this.ui.floatMsg('Espèce rare !', 'gold');
-      }
-      duck.points = pts;
-      this.addScore(pts);
-      this.kills.push({ id: duck.specId, dist, pts });
-      if (this.mode.onKill) this.mode.onKill(this, duck, info);
-    }
-
-    onDuckDown(duck) {
-      if (this.ducks.dog) this.ducks.dog.fetch(duck);
-    }
-
-    onDuckLanded() {}
-
-    onDuckEscaped(duck) {
-      if (this.mode.onEscape) this.mode.onEscape(this, duck);
-    }
-
-    onRetrieved(duck, byDog) {
-      this.retrieved++;
-      const bonus = Math.max(0, Math.round((duck.points || 0) * (byDog ? 0.25 : 0.2)));
-      this.retrieveMoney += bonus;
-      this.ui.feed(byDog ? `Rapporté par le chien` : 'Gibier ramassé', null, 'info', `+${bonus} €`);
-    }
-
-    infract(reason) {
-      this.infractions++;
-      this.addScore(-200);
-      DH.audio.buzz();
-      this.ui.centerMsg(`⚠ Infraction ${this.infractions}/3 : ${reason}`, 3);
-      if (this.infractions >= 3) this.finish('Permis de chasse retiré !');
-    }
-
-    addScore(n) {
-      this.score += n;
-      this.ui.bumpScore();
-    }
-
-    // ================================================================ BOUCLE
-    loop(now) {
-      const dt = Math.min(0.05, (now - this.last) / 1000 || 0.016);
-      this.last = now;
-      if (this.state === 'playing') {
-        this.update(dt);
-      } else if (this.state === 'menu' && this.menuWorld) {
-        this.menuT += dt;
-        const w = this.menuWorld;
-        const sp = w.map.spawn;
-        const a = this.menuT * 0.035;
-        this.camera.position.set(sp.x + Math.sin(a) * 30, w.groundAt(sp.x, sp.z) + 6 + Math.sin(this.menuT * 0.2), sp.z - 10 + Math.cos(a) * 30);
-        this.camera.lookAt(sp.x - Math.sin(a) * 60, 5, sp.z - 30 - Math.cos(a) * 40);
-        if (this.camera.fov !== 60) {
-          this.camera.fov = 60;
-          this.camera.updateProjectionMatrix();
-        }
-        w.update(dt, this.camera, this.renderer);
-      }
-      if (this.state !== 'loading') this.renderer.render(this.scene, this.camera);
-      this.input.endFrame();
-    }
-
-    update(dt) {
-      const input = this.input;
-      this.clock += dt;
-      this.frameQuacks = 0;
-      const w = this.weapons;
-      this.player.update(dt, input, { ads: w.ads, fov: this.camera.fov, weaponDef: w.gun.def });
-      this.player.applyCamera(this.camera);
-      w.update(dt, input, this.player);
-
-      // Zoom
-      let fov = this.opts.fov;
-      if (this.binoculars) fov = 9;
-      else fov = DH.util.lerp(this.opts.fov, w.gun.def.adsFov, w.adsT);
-      if (Math.abs(this.camera.fov - fov) > 0.01) {
-        this.camera.fov = fov;
-        this.camera.updateProjectionMatrix();
-      }
-
-      // Actions
-      if ((input.pressed('KeyB') || input.touch.binocPressed) && this.hasEquip('binoc')) {
-        this.binoculars = !this.binoculars;
-        DH.audio.click(1200, 0.04, 0.2);
-      }
-      this.callCd -= dt;
-      if ((input.pressed('KeyF') || input.touch.callPressed) && this.cfg.mode !== 'balltrap') {
-        if (!this.hasEquip('call')) this.ui.floatMsg("Achetez l'appeau à l'armurerie", 'neutral');
-        else if (this.callCd <= 0) {
-          this.callCd = 7;
-          DH.audio.duckCall();
-          const n = this.ducks.call(this.player.pos);
-          this.ui.floatMsg(n ? `Appeau : ${n} vol${n > 1 ? 's' : ''} intéressé${n > 1 ? 's' : ''}` : 'Appeau : aucun vol à portée', n ? 'good' : 'neutral');
-        }
-      }
-      const near = this.cfg.mode !== 'balltrap' ? this.ducks.nearestDead(this.player.pos, 2.6) : null;
-      this.nearDead = near;
-      if (near && (input.pressed('KeyE') || input.touch.usePressed)) {
-        near.gone = true;
-        near.state = 'retrieved';
-        this.onRetrieved(near, false);
-      }
-
-      this.world.update(dt, this.camera, this.renderer);
-      this.ducks.update(dt);
-      this.fx.update(dt, this.camera);
-      this.mode.update(this, dt);
-      DH.audio.updateListener(this.camera);
-      DH.audio.updateAmbient(dt);
-      this.ui.updateHud(this, dt);
-    }
-
-    // ================================================================ PAUSE / FIN
-    pause() {
-      if (this.state !== 'playing') return;
-      this.state = 'paused';
-      this.input.enabled = false;
-      this.ui.showPause(true);
-    }
-
-    resume() {
-      if (this.state !== 'paused') return;
-      this.state = 'playing';
-      this.input.enabled = true;
-      this.ui.showPause(false);
-      this.last = performance.now();
-    }
-
-    finish(reason, bonus = 0) {
-      if (this.finished) return;
-      this.finished = true;
-      if (bonus) this.addScore(bonus);
-      this.state = 'ended';
-      this.input.enabled = false;
-      this.input.exitLock();
-      const s = DH.save.get();
-      const lvlBefore = DH.save.level();
-      const xpMul = this.modeDef.xp * this.weather.xp * this.time.xp;
-      const xp = Math.max(0, Math.round(this.score * xpMul));
-      const money = Math.max(0, Math.round(xp * 0.55)) + this.retrieveMoney + (this.ducks.dog ? Math.round(xp * 0.1) : 0);
-      s.xp += xp;
-      s.money += money;
-      s.stats.hunts++;
-      s.stats.hits += this.hitShots;
-      s.stats.playTime += Math.round(this.clock);
-      const bk = this.cfg.mode + ':' + this.cfg.map;
-      const record = !s.stats.best[bk] || this.score > s.stats.best[bk];
-      if (record && this.score > 0) s.stats.best[bk] = this.score;
-      DH.save.write();
-      const lvlAfter = DH.save.level();
-      const unlocks = [];
-      if (lvlAfter > lvlBefore) {
-        const between = (x) => x.level > lvlBefore && x.level <= lvlAfter;
-        DH.data.maps.filter(between).forEach((m) => unlocks.push('🗺️ Territoire : ' + m.name));
-        DH.data.modes.filter(between).forEach((m) => unlocks.push('🎮 Mode : ' + m.name));
-        DH.data.weathers.filter(between).forEach((m) => unlocks.push(m.icon + ' Météo : ' + m.name));
-        DH.data.times.filter(between).forEach((m) => unlocks.push(m.icon + ' Moment : ' + m.name));
-        DH.data.weapons.filter(between).forEach((m) => unlocks.push('🔫 En vente : ' + m.name));
-        DH.data.cartridges.filter(between).forEach((m) => unlocks.push('🧨 En vente : ' + m.name));
-        DH.data.equipment.filter(between).forEach((m) => unlocks.push('🎒 En vente : ' + m.name));
-      }
-      DH.audio.stopAmbient();
-      this.ui.showHud(false);
-      this.ui.showResults({
-        reason, score: this.score, xp, xpMul, money, bag: this.bag, shots: this.shots, hitShots: this.hitShots,
-        retrieved: this.retrieved, longest: this.longest, record: record && this.score > 0, lvlBefore, lvlAfter, unlocks,
-        mode: this.modeDef, map: this.map, clays: this.cfg.mode === 'balltrap' ? { hit: this.claysHit, total: this.clayTotal } : null,
-        protectedKills: this.protectedKills, infractions: this.infractions,
-      });
-    }
-
-    quit() {
-      this.finish('Partie abandonnée');
-    }
-
-    toMenu() {
-      this.state = 'menu';
-      this.input.enabled = false;
-      this.input.exitLock();
-      this.ui.showHud(false);
-      this.ui.showPause(false);
-      this.buildMenuWorld();
-      this.ui.showMain();
-    }
-  };
-})();
+  applyQuality(q) { const pr = q === 'low' ? 0.6 : q === 'medium' ? 0.85 : Math.min(window.devicePixelRatio || 1, 1.6); this.renderer.setPixelRatio(pr); this.renderer.shadowMap.enabled = q !== 'low'; }
+  resize() { const w = window.innerWidth, h = window.innerHeight; this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
+  get eq() { const E = HG.data.equipment, out = {}; for (const id of this.save.equipment) { const e = E[id]; for (const k in e) if (!['name', 'price', 'effect'].includes(k)) out[k] = e[k]; } return out; }
+  // ================================================================ SESSION
+  startMode(modeId, opts = {}) {
+    const D = HG.data, M = D.modes[modeId], U = HG.util; this.stop();
+    this.mode = modeId; this.M = M; this.ui.closeAll(); this.ui.showLoading(true);
+    setTimeout(() => {
+      HG.audio.init();
+      const wid = opts.weather && opts.weather !== 'auto' ? opts.weather : U.weighted(modeId === 'lobby' ? { beau: 4, voile: 3, couvert: 1 } : M.map === 'montagne' ? { beau: 4, voile: 3, couvert: 2, neige: 2, vent: 2, brume: 1 } : M.map === 'marais' ? { brume: 4, beau: 2, voile: 3, couvert: 2, pluie: 2, vent: 1 } : M.map === 'boreal' ? { beau: 3, voile: 3, couvert: 2, neige: 3, brume: 1 } : { beau: 3, voile: 3, couvert: 2, brume: 3, pluie: 2, vent: 1 });
+      this.world = new HG.World(this.scene, M.map, wid); this.scene.background = null;
+      HG.audio.setEcho(M.map === 'montagne' ? 0.6 : M.map === 'foret' || M.map === 'boreal' ? 0.3 : 0.1);
+      this.hour = opts.hour != null ? opts.hour : M.hours[0]; this.endHour = M.duration ? this.hour + M.duration : null; this.world.setTime(this.hour);
+      this.player = new HG.Player(this.camera, this.canvas, this.world, this.save.options); this.player.holdAim = false; this.player.enabled = true;
+      this.player.onLockChange = (locked, failed) => { if (failed) this.hint('Verrouillage souris refusé : cliquez-glissez pour regarder.'); if (!locked && this.running && !this.paused && !this.ui.overlayOpen && !failed && !this.player.dragLook) this.pause(); };
+      const sp = this.world.spawnPoint || (modeId === 'lobby' ? { x: 0, z: -12 } : this.pickSpawn()); this.player.pos.set(sp.x, this.world.height(sp.x, sp.z), sp.z); this.player.yaw = modeId === 'lobby' ? Math.PI : U.rand(0, 6.28);
+      this.weapons = new HG.Weapons(this); this.weapons.setLoadout(this.allowedLoadout(modeId));
+      this.animals = new HG.Animals(this.world, modeId, this); HG.animals = this.animals;
+      this.dog = this.save.loadout.dog && this.save.loadout.dog !== 'none' && D.dogs[this.save.loadout.dog] && !M.clay ? new HG.Dog(this.save.loadout.dog, this.world, this) : null;
+      if (this.dog) { this.dog.pos.set(sp.x + 1.5, this.world.height(sp.x + 1.5, sp.z), sp.z); }
+      this.clays = new HG.Clays(this); this.range = new HG.Range(this);
+      this.session = { mode: modeId, bag: [], earned: 0, fines: [], xp: 0, shots: 0, hits: 0, startHour: this.hour, events: [], quota: {}, wounded: 0, licence: M.licence, ended: false, startTime: performance.now() };
+      this.ctx = { player: this.player.pos, yaw: 0, wind: this.world.wind, noise: 10, visibility: 1, moving: 0, night: false, scentCover: 0, hour: this.hour, dog: null, eq: this.eq, playerHit: (a) => this.playerHit(a), hint: (t) => this.hint(t), smallGame: false };
+      this.animals.spawnInitial(this.player.pos);
+      if (HG.Modes[modeId] && HG.Modes[modeId].start) HG.Modes[modeId].start(this);
+      this.ui.showLoading(false); this.ui.showHUD(true); this.ui.updateAmmo(); this.ui.buildMinimap(this.world);
+      this.running = true; this.paused = false; this.callT = 0; this.excite = 0; this.binoc = false; this.time = 0;
+      this.save.last.mode = modeId; if (modeId !== 'lobby') this.save.stats.hunts++; HG.save.write();
+      if (!this.player.isTouch) this.player.requestLock();
+    }, 60);
+  }
+  allowedLoadout(modeId) { const S = this.save, D = HG.data; const ids = [S.loadout.primary, S.loadout.secondary].filter((id) => id && D.weapons[id] && S.weapons.includes(id) && D.weaponAllowed(modeId, D.weapons[id])); if (!ids.length) { const any = S.weapons.find((id) => D.weaponAllowed(modeId, D.weapons[id])); if (any) ids.push(any); } return ids; }
+  pickSpawn() { const W = this.world, U = HG.util; for (let i = 0; i < 100; i++) { const x = U.rand(-W.half * 0.5, W.half * 0.5), z = U.rand(-W.half * 0.5, W.half * 0.5); if (!W.isWater(x, z) && W.normal(x, z).y > 0.8 && (W.biome !== 'montagne' || W.height(x, z) < 120)) return { x, z }; } return { x: 0, z: 0 }; }
+  stop() { this.running = false; if (this.world) { if (HG.Modes[this.mode] && HG.Modes[this.mode].end) HG.Modes[this.mode].end(this); this.animals.dispose(); if (this.dog) this.dog.dispose(); this.weapons.dispose(); this.clays.end(); for (const f of this.fx) this.scene.remove(f.m); this.fx = []; while (this.scene.children.length) this.scene.remove(this.scene.children[0]); this.scene.add(this.camera); this.world = null; HG.audio.stopAll(); } this.camera.fov = this.baseFov; this.camera.updateProjectionMatrix(); if (this.player) { this.player.enabled = false; this.player.fixed = null; } if (document.pointerLockElement) document.exitPointerLock(); this.ui.showHUD(false); }
+  pause() { if (!this.running || this.paused) return; this.paused = true; this.ui.showPause(true); if (document.pointerLockElement) document.exitPointerLock(); }
+  resume() { this.paused = false; this.ui.showPause(false); this.ui.closeOverlay(); if (!this.player.isTouch && !this.player.dragLook) this.player.requestLock(); this.clock.getDelta(); }
+  feed(msg) { this.ui.feed(msg); }
+  hint(msg) { this.ui.hint(msg); }
+  fine(amount, reason) { this.session.fines.push({ amount, reason }); this.save.money -= amount; this.save.stats.fines += amount; HG.audio.fail(); this.ui.updateMoney(); }
+  // ================================================================ BOUCLE
+  animate() {
+    requestAnimationFrame(this.animate); const dt = Math.min(0.05, this.clock.getDelta());
+    if (!this.running || !this.world) return;
+    if (this.paused || this.ui.overlayOpen) { this.renderer.render(this.scene, this.camera); return; }
+    this.time += dt; const W = this.world, P = this.player, S = this.session, M = this.M;
+    // temps de jeu
+    this.hour += dt * M.tscale / 60; if (this.hour >= 24) this.hour -= 24; W.setTime(this.hour);
+    if (this.endHour != null && this.hour >= this.endHour && !S.ended) return this.endHunt('Fin de la journée de chasse');
+    // actions clavier
+    for (const a of P.consumeActions()) this.handleAction(a);
+    if (P.mouseDown && this.weapons.slot.w.action === 'semi' && this.weapons.busy <= 0 && this.autoFireOk) { /* semi : un coup par clic */ }
+    this.ctx.eq = this.eq; this.ctx.excite = this.excite;
+    P.update(dt, this.ctx);
+    this.weapons.update(dt, this.ctx);
+    // contexte animaux
+    const c = this.ctx; c.yaw = -P.yaw + Math.PI / 2; c.player = P.pos; c.noise = P.noise; c.visibility = P.visibility; c.moving = P.moving; c.night = W.isNight; c.hour = this.hour; c.scentCover = this.eq.vis ? 0.15 : 0; c.dog = this.dog && this.dog.active ? { pos: this.dog.pos, active: this.dog.state !== 'heel', flushing: this.dog.flushing } : null; c.dogFlush = this.dog && this.dog.role === 'pointer' && this.dog.state === 'flush';
+    this.animals.update(dt, c);
+    if (this.dog) this.dog.update(dt, { player: P.pos, yaw: c.yaw, smallGame: c.smallGame });
+    this.clays.update(dt);
+    if (HG.Modes[this.mode] && HG.Modes[this.mode].update) HG.Modes[this.mode].update(this, dt);
+    this.updateFx(dt); this.excite = Math.max(0, this.excite - dt * 4);
+    W.update(dt, P.pos, this.camera, M.tscale);
+    HG.audio.updateListener(this.camera); HG.audio.setAmbience({ wind: W.wind.speed * (1 + W.wind.gust * 0.3), rain: W.weather.rain, water: W.map.water && W.waterDepth(P.pos.x, P.pos.z) > -2 && W.isWater(P.pos.x + 10, P.pos.z), night: W.isNight });
+    if (Math.random() < dt * (W.isNight ? 0.02 : 0.15) && !W.weather.rain) { const a = Math.random() * 6.28; const p = new THREE.Vector3(P.pos.x + Math.cos(a) * 30, P.pos.y + 6, P.pos.z + Math.sin(a) * 30); W.isNight ? HG.audio.owl(p) : HG.audio.birdChirp(p); }
+    this.checkInteractions();
+    this.ui.updateHUD(dt);
+    this.save.stats.playTime += dt;
+    this.renderer.render(this.scene, this.camera);
+  }
+  updateFx(dt) { for (const f of this.fx) { f.t += dt; if (f.still) continue; if (f.vel) { if (f.grav) f.vel.y -= 9.8 * dt; f.m.position.addScaledVector(f.vel, dt); } if (f.grow) f.m.scale.addScalar(f.grow * dt); if (f.m.material && f.m.material.opacity != null && f.m.isSprite) f.m.material.opacity = Math.max(0, 0.5 * (1 - f.t / f.life)); if (f.spin) { f.m.rotation.x += dt * 8; f.m.rotation.y += dt * 6; } } for (let i = this.fx.length - 1; i >= 0; i--) if (this.fx[i].t > this.fx[i].life) { this.scene.remove(this.fx[i].m); this.fx.splice(i, 1); } }
+  spawnPuff(pos, color, size) { const m = new THREE.Sprite(new THREE.SpriteMaterial({ color, transparent: true, opacity: 0.5, depthWrite: false })); m.scale.setScalar(size); m.position.copy(pos); this.scene.add(m); this.fx.push({ m, t: 0, life: 0.9, vel: new THREE.Vector3(0, 0.6, 0), grow: size * 1.5 }); }
+  // ================================================================ ACTIONS
+  handleAction(a) {
+    const k = a.key, P = this.player, Wp = this.weapons, A = HG.audio;
+    if (k === 'Escape') { if (this.ui.overlayOpen) this.ui.closeOverlay(); else this.pause(); return; }
+    if (k === 'Tab') { if (this.mode === 'lobby') this.ui.openHub('chasses'); else this.ui.openHub('carnet'); return; }
+    if (k === 'Fire') { if (this.binoc) return; return Wp.handle('Fire'); }
+    if (k === 'KeyR') return Wp.handle('KeyR');
+    if (k === 'ZoomIn' || k === 'ZoomOut') return Wp.handle(k);
+    if (k === 'KeyC' || k === 'ControlLeft') { P.setStance(P.stance === 'crouch' ? 'stand' : 'crouch'); return; }
+    if (k === 'KeyZ' || k === 'KeyX') { P.setStance(P.stance === 'prone' ? 'stand' : 'prone'); return; }
+    if (k === 'Digit1') { if (Wp.cur !== 0 && Wp.slots.length) { Wp.switchWeapon(); } return; }
+    if (k === 'Digit2' || k === 'Digit0') { Wp.switchWeapon(); return; }
+    if (k === 'KeyE') return this.interact();
+    if (k === 'KeyQ') return this.useCall();
+    if (k === 'KeyF') { if (this.dog) this.dog.command(this.ctx); else this.hint('Pas de chien : achetez-en un au chenil.'); return; }
+    if (k === 'KeyB') { if (!this.eq.binoc) { this.hint('Achetez des jumelles à l\'armurerie.'); return; } this.binoc = !this.binoc; P.wantAim = false; this.ui.showBinoc(this.binoc); return; }
+    if (k === 'KeyM') { this.ui.toggleMap(); return; }
+    if (k === 'KeyT') { this.ui.toggleAmmoPanel(); return; }
+    if (k === 'Breath') { P.touchBreath = !P.touchBreath; return; }
+    if (k === 'KeyL') { const s = Wp.slot; if (s.w.type === 'rifle') { s.zero = s.zero === 100 ? 150 : s.zero === 150 ? 200 : s.zero === 200 ? 300 : s.zero === 300 ? 50 : 100; s.zeroAngle = Wp.computeZero(s); this.save.loadout.zero = s.zero; this.hint('Réglage lunette : zéro à ' + s.zero + ' m'); A.uiClick(); this.ui.updateAmmo(); } return; }
+    if (k === 'KeyK') { const ids = Object.keys(HG.data.chokes); const cur = this.save.loadout.choke || 'mod'; const next = ids[(ids.indexOf(cur) + 1) % ids.length]; this.save.loadout.choke = next; this.hint('Choke : ' + HG.data.chokes[next].name); A.uiClick(); this.ui.updateAmmo(); return; }
+  }
+  checkInteractions() {
+    const P = this.player, W = this.world; let best = null, bd = 1e9;
+    if (this.clays.session && !this.clays.session.done) { this.ui.showPrompt(this.clays.session.inAir.length ? '' : 'E : PULL'); return; }
+    for (const it of W.interact) { const d = Math.hypot(it.x - P.pos.x, it.z - P.pos.z); if (d < it.r && d < bd) { bd = d; best = it; } }
+    if (P.fixed) { this.ui.showPrompt('E : descendre du mirador'); this.nearInteract = { type: 'exit' }; return; }
+    const dead = this.animals.nearest(P.pos, (a) => a.dead && !a.collected && !a.retrievedBy); if (dead.a && dead.d < 3 && (!best || dead.d < bd)) { this.nearInteract = { type: 'collect', animal: dead.a }; this.ui.showPrompt('E : prélever ' + dead.a.d.name); return; }
+    this.nearInteract = best; this.ui.showPrompt(best ? 'E : ' + best.label : '');
+  }
+  interact() {
+    const it = this.nearInteract, P = this.player, W = this.world, A = HG.audio;
+    if (this.clays.session && !this.clays.session.done) { if (!this.clays.pull()) { if (this.clays.session.inAir.length) this.hint('Plateau en vol !'); } return; }
+    if (!it) return;
+    if (it.type === 'exit') { P.fixed = null; const s = this.onMirador; P.pos.set(s.x + Math.sin(s.ry) * 2, W.height(s.x, s.z), s.z + Math.cos(s.ry) * 2); A.footstep('wood'); this.ui.setObjective(this.M.name); return; }
+    if (it.type === 'collect') return this.collectAnimal(it.animal);
+    if (it.type === 'mirador') { P.fixed = { y: it.y, x: it.x, z: it.z }; P.pos.set(it.x, it.y, it.z); P.setStance('stand'); this.onMirador = W.structures.find((s) => s.type === 'mirador' && s.x === it.x); A.footstep('wood'); this.feed('Installé au mirador : tir stable, visibilité réduite pour le gibier.'); return; }
+    if (it.type === 'hutte') { P.pos.set(it.x, it.y, it.z); P.setStance('crouch'); this.feed('Dans la hutte : accroupi, à l\'abri des regards.'); return; }
+    if (it.type === 'Armurerie') return this.ui.openHub('armurerie');
+    if (it.type === 'Chenil') return this.ui.openHub('chenil');
+    if (it.type === 'Bureau des chasses') return this.ui.openHub('chasses');
+    if (it.type === 'Poste carabine') { P.pos.set(0, W.height(0, -12), -12); P.yaw = Math.PI; P.pitch = 0; this.hint('Stand 50 → 300 m. L : changer le zéro de la lunette. Sanglier courant à gauche.'); return; }
+    if (it.type === 'trap' || it.type === 'skeet' || it.type === 'sporting') { if (this.weapons.slot.w.type !== 'shotgun') { const i = this.weapons.slots.findIndex((s) => s.w.type === 'shotgun'); if (i < 0) { this.hint('Il faut un fusil pour les plateaux (1/2 pour changer d\'arme).'); return; } this.weapons.cur = i; this.weapons.show(); } this.clays.start(it.type, false); return; }
+  }
+  useCall() {
+    const eq = this.eq, A = HG.audio; if (this.callT > 0) return; this.callT = 8; setTimeout(() => { this.callT = 0; }, 8000);
+    const calls = this.save.equipment.map((id) => HG.data.equipment[id].call).filter(Boolean); if (!calls.length) { this.hint('Aucun appeau : achetez-en un à l\'armurerie.'); return; }
+    const M = this.M; let used = null;
+    if (M.water && calls.includes('oie') && Math.random() < 0.4) used = 'oie'; else if (M.water && calls.includes('colvert')) used = 'colvert'; else if (calls.includes('cerf') && (this.mode === 'approche' || this.mode === 'boreal')) used = 'cerf'; else if (calls.includes('chevreuil') && (this.mode === 'approche' || this.mode === 'arc')) used = 'chevreuil'; else if (calls.includes('renard')) used = 'renard'; else used = calls[0];
+    if (used === 'colvert') { A.duckCall(); if (HG.Modes.passee.onCall && this.mode === 'passee') HG.Modes.passee.onCall(this); }
+    if (used === 'oie') { A.gooseCall(); if (this.mode === 'passee') HG.Modes.passee.onCall(this); }
+    if (used === 'cerf') { A.deerCall(); this.attractSpecies(['cerf', 'wapiti', 'orignal'], 400, 0.6); }
+    if (used === 'chevreuil') { A.roeCall(); this.attractSpecies(['chevreuil'], 250, 0.7); }
+    if (used === 'renard') { A.hareCall(); this.attractSpecies(['renard', 'coyote'], 350, 0.7); }
+    this.ctx.noise = 60; this.excite = 5;
+  }
+  attractSpecies(list, range, chance) { const P = this.player.pos; let n = 0; for (const a of this.animals.list) { if (a.dead || !list.includes(a.sp) || a.state === 'flee') continue; const d = Math.hypot(a.pos.x - P.x, a.pos.z - P.z); if (d < range && Math.random() < chance) { a.attract = { x: P.x + HG.util.rand(-20, 20), z: P.z + HG.util.rand(-20, 20) }; a.state = 'walk'; n++; if (a.d.vocal === 'brame') setTimeout(() => HG.audio[a.sp === 'orignal' ? 'moose' : 'brame'](a.pos), 1500); } } if (n) this.feed('👂 Une réponse au loin…'); }
+  // ================================================================ ÉVÉNEMENTS DE TIR
+  onShotFired(shot, noiseRadius) {
+    const P = this.player.pos; this.session.shots++; this.excite = 12;
+    for (const a of this.animals.list) { if (a.dead) continue; const d = Math.hypot(a.pos.x - P.x, a.pos.z - P.z); if (d < noiseRadius) { a.awareness = Math.max(a.awareness, d < noiseRadius * 0.5 ? 2 : 0.9); if (d < noiseRadius * 0.5 && a.state !== 'driven' && !a.hidden) a.flee(this.ctx, d); } }
+    if (HG.Modes[this.mode] && HG.Modes[this.mode].onShot) HG.Modes[this.mode].onShot(this, shot);
+  }
+  onAnimalHit(a, rec, shot) {
+    const S = this.session; if (!shot.counted) { shot.counted = true; S.hits++; this.save.stats.hits++; }
+    this.ui.hitmarker(); a.hitBy = shot; a.lastRec = rec;
+    const zoneName = { vital: 'cœur / poumons', head: 'tête', neck: 'cou', gut: 'ventre', rump: 'arrière-main', leg: 'patte' }[rec.zone];
+    if (a.d.illegal) { const f = a.d.fine || 2000; this.fine(f, 'Tir sur ' + a.d.name + ' (' + a.d.protectedLabel + ')'); this.feed('🚫 ' + a.d.protectedLabel + ' : ' + a.d.name + ' ! Amende ' + HG.util.money(f)); }
+    else this.feed(`🎯 Touché : ${a.d.name} — ${zoneName} à ${Math.round(rec.dist)} m (${Math.round(rec.energy)} J) → ${rec.result}`);
+    if (rec.result === 'blessé' && a.d.kind === 'big') { S.wounded++; this.save.stats.wounded++; this.hint('Animal blessé : suivez la piste de sang (chien de rouge : F).'); }
+    if (rec.kind === 'shot' && a.d.kind === 'big' && !a.finedShot) { a.finedShot = true; this.fine(200, 'Tir à plombs sur grand gibier'); this.feed('🚫 Tir à plombs sur du grand gibier : interdit ! -200 €'); }
+    if (shot.weapon === 'c22lr' && a.d.kind === 'big' && !a.fined22) { a.fined22 = true; this.fine(300, 'Calibre non conforme (.22 LR sur grand gibier)'); this.feed('🚫 .22 LR sur du grand gibier : calibre interdit ! -300 €'); }
+  }
+  onAnimalDeath(a) {
+    const P = this.player.pos; const d = Math.hypot(a.pos.x - P.x, a.pos.z - P.z);
+    if (!a.hitBy) return; // mort naturelle / chien
+    this.feed(`☠️ ${a.d.name} ${a.deathCause === 'blessure' ? 'retrouvé mort' : 'abattu'} à ${Math.round(d)} m. Allez le prélever (E).`); this.world.markers.push({ x: a.pos.x, z: a.pos.z, label: a.d.name, icon: '☠️', temp: true, animal: a });
+    if (this.dog && this.dog.role === 'retriever' && a.d.kind !== 'big' && this.dog.state === 'heel') setTimeout(() => { if (this.dog && !a.collected && !a.retrievedBy) this.dog.command(this.ctx); }, 800);
+    if (d > 300) this.save.stats.longest = Math.max(this.save.stats.longest, Math.round(d));
+  }
+  markFound(a) { this.world.markers.push({ x: a.pos.x, z: a.pos.z, label: a.d.name + ' (trouvé)', icon: '🐕', temp: true, animal: a }); }
+  onRetrieved(a) { this.collectAnimal(a, true); }
+  playerHit(a) { this.player.kick(0.3, 0.3, 8); this.fine(0, ''); this.session.fines.pop(); this.feed('🩸 ' + a.d.name + ' vous a chargé ! Vous êtes blessé : la chasse s\'arrête.'); HG.audio.bear(this.player.pos); this.endHunt('Blessé par un ' + a.d.name); }
+  collectAnimal(a, byDog) {
+    if (a.collected) return; a.collected = true; const U = HG.util, D = a.d, S = this.session, rec = a.lastRec || { zone: 'gut', dist: 0, result: '' };
+    const eq = this.eq; let mult = 1, notes = [];
+    if (D.illegal) { const card = { name: D.name, illegal: true, note: D.protectedLabel, money: 0, xp: -100, mass: a.mass }; S.xp -= 100; S.bag.push(card); this.ui.showHarvest(card); a.group.visible = false; return; }
+    const zm = { vital: [1.3, 'Tir de cœur : parfait'], head: [1.0, 'Tir de tête'], neck: [1.0, 'Tir de cou'], gut: [0.5, 'Tir de ventre : mauvais placement'], rump: [0.35, 'Tir d\'arrière-main'], leg: [0.3, 'Tir de patte'] }[rec.zone] || [0.5, ''];
+    mult *= zm[0]; notes.push(zm[1]);
+    if (a.deathCause === 'blessure') { mult *= 0.75; notes.push('Retrouvé après recherche'); }
+    const wpn = HG.data.weapons[(a.hitBy || {}).weapon] || {}; const maxD = wpn.type === 'bow' ? 35 : wpn.type === 'shotgun' ? 45 : this.mode === 'montagne' ? 400 : 300;
+    if (rec.dist > maxD) { mult *= 0.7; notes.push('Tir trop lointain (' + Math.round(rec.dist) + ' m)'); } else if (rec.dist > maxD * 0.6 && wpn.type === 'rifle') { mult *= 1.1; notes.push('Beau tir à ' + Math.round(rec.dist) + ' m'); }
+    if (rec.kind === 'shot' && D.kind === 'big') { mult *= 0.2; notes.push('Plombs sur grand gibier'); }
+    if (D.female && a.herd && a.herd.some((m) => m.sp === 'marcassin' && !m.dead)) { this.fine(300, 'Laie suitée abattue'); notes.push('Laie suitée : amende 300 €'); mult *= 0.5; }
+    S.quota[a.sp] = (S.quota[a.sp] || 0) + 1; const q = this.M.quota && this.M.quota[a.sp]; if (q != null && S.quota[a.sp] > q) { this.fine(400, 'Quota dépassé : ' + D.name); notes.push('Quota dépassé (-400 €)'); mult *= 0; }
+    if (byDog) notes.push('Rapporté par ' + this.dog.d.name);
+    const trophyF = 0.7 + a.trophy * 0.9; const money = Math.round(D.value * mult * trophyF * (eq.sell || 1)); const xp = Math.round(D.xp * Math.max(0.3, mult) * (0.8 + a.trophy * 0.4));
+    this.save.money += money; S.earned += money; S.xp += xp; this.save.xp += xp; this.save.stats.earned += money; this.save.stats.kills[a.sp] = (this.save.stats.kills[a.sp] || 0) + 1;
+    const best = this.save.stats.best[a.sp]; const score = Math.round(a.trophy * 100); if (!best || score > best.score) this.save.stats.best[a.sp] = { score, label: a.trophyLabel(), mass: a.mass, dist: Math.round(rec.dist) };
+    const card = { name: D.name, mass: a.mass, trophy: a.trophyLabel(), trophyScore: score, zone: rec.zone, dist: Math.round(rec.dist), money, xp, notes, kind: D.kind, medal: score >= 92 ? 'Or' : score >= 80 ? 'Argent' : score >= 65 ? 'Bronze' : null };
+    S.bag.push(card); this.ui.showHarvest(card); HG.audio.cash(); this.ui.updateMoney(); HG.save.write();
+    a.group.visible = false; const mi = this.world.markers.findIndex((m) => m.animal === a); if (mi >= 0) this.world.markers.splice(mi, 1);
+    const lvlBefore = HG.save.level(); if (HG.save.level() > lvlBefore) HG.audio.fanfare();
+  }
+  onClaySessionEnd(s) {
+    const disc = s.disc, hit = s.hit; let money = 0; const stats = this.save.stats; this.save.stats.claysShot += 25;
+    if (s.competition) { const table = { trap: [0, 100, 220, 400], skeet: [0, 120, 260, 500], sporting: [0, 150, 350, 800] }[disc]; money = hit >= 24 ? table[3] : hit >= 20 ? table[2] : hit >= 15 ? table[1] : 0; this.save.money += money; this.session.earned += money; const xp = hit * 8; this.session.xp += xp; this.save.xp += xp; const key = 'best' + disc[0].toUpperCase() + disc.slice(1); stats[key] = Math.max(stats[key] || 0, hit); HG.save.write(); this.ui.updateMoney(); if (money) HG.audio.fanfare(); else HG.audio.fail(); }
+    else { HG.audio.fanfare(); }
+    this.ui.showClayResult(s, money);
+    if (s.competition) setTimeout(() => this.endHunt('Compétition terminée'), 100); else this.clays.session = null;
+  }
+  endHunt(reason) {
+    const S = this.session; if (S.ended) return; S.ended = true; this.running = false; if (document.pointerLockElement) document.exitPointerLock();
+    const fines = S.fines.reduce((t, f) => t + f.amount, 0); const lvl = HG.save.level(); HG.save.write();
+    if (this.mode === 'lobby') { this.stop(); this.ui.showMainMenu(); return; }
+    this.ui.showBilan({ reason, bag: S.bag, earned: S.earned, fines: S.fines, finesTotal: fines, xp: S.xp, shots: S.shots, hits: S.hits, wounded: S.wounded, licence: S.licence, level: lvl, mode: this.M.name, clay: this.clays.session });
+  }
+  backToCamp() { this.ui.closeAll(); this.startMode('lobby'); }
+  hitTargets(p, ray, segLen) { if (this.clays.hitTest(p, ray, segLen)) return true; if (this.range.hitTest(p, ray, segLen)) return true; return false; }
+};
