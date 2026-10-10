@@ -3,26 +3,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-/* Papier calme : colonne unique, larges respirations, un seul accent vert sauge. */
+/* Application en vues : un en-tête fixe, une scène qui occupe le reste de l'écran.
+   On change de page au clic, jamais en descendant. */
 :root{
   --paper:#faf8f5; --paper-2:#f3efe9; --card:#ffffff;
   --ink:#2b2a27; --ink-soft:#5f5c56; --ink-mute:#8c8880;
   --line:#e6e1d8; --accent:#5f7064; --accent-soft:#eaeeea;
-  --header-bg:rgba(250,248,245,.82);
-  --vis-1:linear-gradient(150deg,#eef1ed,#f3ece1);
-  --vis-2:linear-gradient(150deg,#f1eee7,#e9eeea);
-  --vis-3:linear-gradient(150deg,#edf0ec,#f1ece4);
-  --vis-ic:rgba(43,42,39,.26);
-  --portrait:linear-gradient(155deg,#eef1ed 0%,#f5f0e8 52%,#e9e4da 100%);
-  --portrait-mono:rgba(95,112,100,.28);
-  --portrait-veil:linear-gradient(to top,rgba(255,255,255,.92),rgba(255,255,255,0));
   --badge-bg:rgba(255,255,255,.92); --badge-fg:#5f5c56; --badge-bd:rgba(43,42,39,.07);
   --badge-cp-bg:#e8e3d7; --badge-cp-fg:#6b6453;
+  --portrait:linear-gradient(155deg,#eef1ed 0%,#f5f0e8 52%,#e9e4da 100%);
   --glow-a:rgba(95,112,100,.10); --glow-b:rgba(196,176,150,.16);
   --shadow:0 1px 2px rgba(43,42,39,.04), 0 10px 30px -18px rgba(43,42,39,.18);
   --sv-sky:#e5eae2; --sv-far:#c2cdbd; --sv-mid:#d6dccf; --sv-wall:#f8f5ed;
   --sv-roof:#98a391; --sv-win:#6d8270; --sv-fore:#b4bfae; --sv-water:#c3d3cd;
-  --radius:18px; --maxw:1120px;
+  --radius:18px;
   --serif:"Cormorant Garamond",Garamond,Georgia,"Times New Roman",serif;
   --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
@@ -31,20 +25,13 @@
     --paper:#1a1917; --paper-2:#211f1d; --card:#242220;
     --ink:#ece7df; --ink-soft:#b9b3a9; --ink-mute:#8b857c;
     --line:#332f2b; --accent:#9db49f; --accent-soft:#272d28;
-    --header-bg:rgba(26,25,23,.82);
-    --vis-1:linear-gradient(150deg,#262a27,#2b2721);
-    --vis-2:linear-gradient(150deg,#2a2722,#242a26);
-    --vis-3:linear-gradient(150deg,#252925,#2a2621);
-    --vis-ic:rgba(236,231,223,.24);
-    --portrait:linear-gradient(155deg,#262a27 0%,#2c2822 52%,#201e1b 100%);
-    --portrait-mono:rgba(157,180,159,.26);
-    --portrait-veil:linear-gradient(to top,rgba(26,25,23,.92),rgba(26,25,23,0));
     --badge-bg:rgba(36,34,32,.92); --badge-fg:#c6c0b6; --badge-bd:rgba(236,231,223,.12);
     --badge-cp-bg:#3a342a; --badge-cp-fg:#ddd3c0;
+    --portrait:linear-gradient(155deg,#262a27 0%,#2c2822 52%,#201e1b 100%);
     --glow-a:rgba(157,180,159,.09); --glow-b:rgba(196,176,150,.07);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px -20px rgba(0,0,0,.75);
     --sv-sky:#212420; --sv-far:#2b2f28; --sv-mid:#262a23; --sv-wall:#38352f;
     --sv-roof:#4a5046; --sv-win:#8ea391; --sv-fore:#2d312a; --sv-water:#2a332f;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px -20px rgba(0,0,0,.75);
     color-scheme:dark;
   }
 }
@@ -52,224 +39,233 @@
   --paper:#1a1917; --paper-2:#211f1d; --card:#242220;
   --ink:#ece7df; --ink-soft:#b9b3a9; --ink-mute:#8b857c;
   --line:#332f2b; --accent:#9db49f; --accent-soft:#272d28;
-  --header-bg:rgba(26,25,23,.82);
-  --vis-1:linear-gradient(150deg,#262a27,#2b2721);
-  --vis-2:linear-gradient(150deg,#2a2722,#242a26);
-  --vis-3:linear-gradient(150deg,#252925,#2a2621);
-  --vis-ic:rgba(236,231,223,.24);
-  --portrait:linear-gradient(155deg,#262a27 0%,#2c2822 52%,#201e1b 100%);
-  --portrait-mono:rgba(157,180,159,.26);
-  --portrait-veil:linear-gradient(to top,rgba(26,25,23,.92),rgba(26,25,23,0));
   --badge-bg:rgba(36,34,32,.92); --badge-fg:#c6c0b6; --badge-bd:rgba(236,231,223,.12);
   --badge-cp-bg:#3a342a; --badge-cp-fg:#ddd3c0;
+  --portrait:linear-gradient(155deg,#262a27 0%,#2c2822 52%,#201e1b 100%);
   --glow-a:rgba(157,180,159,.09); --glow-b:rgba(196,176,150,.07);
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px -20px rgba(0,0,0,.75);
   --sv-sky:#212420; --sv-far:#2b2f28; --sv-mid:#262a23; --sv-wall:#38352f;
   --sv-roof:#4a5046; --sv-win:#8ea391; --sv-fore:#2d312a; --sv-water:#2a332f;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px -20px rgba(0,0,0,.75);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{height:100%}
 body{
-  margin:0;background:var(--paper);color:var(--ink);
-  font-family:var(--sans);font-size:16.5px;line-height:1.75;font-weight:300;
-  -webkit-font-smoothing:antialiased;letter-spacing:.005em;
+  margin:0;background:var(--paper);color:var(--ink);overflow:hidden;
+  display:grid;grid-template-rows:auto minmax(0,1fr);
+  font-family:var(--sans);font-size:16px;line-height:1.7;font-weight:300;
+  -webkit-font-smoothing:antialiased
 }
 a{color:inherit;text-decoration:none}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
-.wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding-inline:clamp(16px,5vw,40px)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
 h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0;text-wrap:balance}
-h1{font-size:clamp(2.4rem,6.6vw,4.4rem);line-height:1.07}
-h2{font-size:clamp(1.85rem,4vw,2.65rem);line-height:1.15}
-h3{font-size:1.32rem;line-height:1.3}
-p{margin:0 0 1.1em}
-.eyebrow{font-size:.72rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin:0 0 1.1rem}
-.lead{font-size:1.08rem;color:var(--ink-soft);max-width:64ch}
-section{padding-block:clamp(68px,10vw,124px);position:relative}
-.sec-head{max-width:66ch;margin-bottom:clamp(34px,6vw,60px)}
-.rule{height:1px;background:var(--line);border:0;margin:0}
+p{margin:0}
+.eyebrow{font-size:.68rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin:0}
+.muted{color:var(--ink-mute)}
 
-header{
-  position:sticky;top:env(safe-area-inset-top,0px);z-index:50;
-  background:var(--header-bg);backdrop-filter:blur(14px) saturate(1.1);
-  border-bottom:1px solid transparent;transition:border-color .4s ease
+/* ---------- en-tête ---------- */
+.topbar{
+  border-bottom:1px solid var(--line);background:var(--paper);
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+  padding:12px clamp(16px,4vw,34px)
 }
-header.scrolled{border-bottom-color:var(--line)}
-.nav{display:flex;align-items:center;justify-content:space-between;gap:24px;height:74px}
-.brand{display:flex;align-items:baseline;gap:10px;font-family:var(--serif);font-size:1.2rem}
-.brand span{font-family:var(--sans);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute)}
-.nav-links{display:flex;align-items:center;gap:30px;font-size:.9rem}
-.nav-links a{color:var(--ink-soft);transition:color .25s ease;position:relative}
-.nav-links a::after{content:"";position:absolute;left:0;bottom:-5px;width:100%;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
-.nav-links a:hover{color:var(--ink)}
-.nav-links a:hover::after{transform:scaleX(1)}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:10px;
-  padding:13px 26px;border-radius:999px;font-family:var(--sans);font-size:.88rem;
-  border:1px solid var(--accent);background:var(--accent);color:var(--paper);
-  cursor:pointer;transition:transform .3s cubic-bezier(.2,.7,.3,1), box-shadow .3s ease
+.logo{display:flex;align-items:center;gap:12px;flex:none}
+.logo .mark{width:40px;height:40px;flex:none;color:var(--accent)}
+.logo .name{font-family:var(--serif);font-size:1.18rem;line-height:1.15;letter-spacing:.01em}
+.logo .role{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute)}
+.tabs{display:flex;gap:4px;flex:1 1 320px;min-width:0;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:none;padding:9px 16px;border-radius:999px;border:1px solid transparent;background:transparent;
+  font-family:var(--sans);font-size:.87rem;color:var(--ink-soft);cursor:pointer;white-space:nowrap;
+  transition:color .25s ease, background .25s ease, border-color .25s ease
 }
-.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px -14px rgba(95,112,100,.7)}
-.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
-.btn.ghost:hover{border-color:var(--accent);color:var(--accent);box-shadow:none}
-.btn.small{padding:10px 20px;font-size:.82rem}
-.menu-btn{display:none;background:none;border:0;padding:8px;cursor:pointer;color:var(--ink)}
+.tab:hover{color:var(--ink);border-color:var(--line)}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.topbar .call{flex:none;font-size:.84rem;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+.topbar .call svg{width:16px;height:16px;color:var(--accent)}
 
-.hero{padding-block:clamp(64px,11vw,128px) clamp(56px,8vw,104px);overflow:hidden}
-.hero::before{
-  content:"";position:absolute;inset:-20% -10% auto -10%;height:120%;z-index:-1;
-  background:radial-gradient(42rem 28rem at 78% 8%,var(--glow-a),transparent 70%),
-             radial-gradient(34rem 24rem at 6% 72%,var(--glow-b),transparent 70%)
+/* ---------- scène ---------- */
+.stage{position:relative;min-height:0;overflow:hidden}
+.view{
+  position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;
+  padding:clamp(20px,3.4vw,44px) clamp(16px,4vw,34px);
+  opacity:0;visibility:hidden;transform:translateY(10px);
+  transition:opacity .34s ease, transform .34s cubic-bezier(.2,.7,.3,1), visibility .34s
 }
-.hero-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(32px,6vw,72px);align-items:center}
-.hero h1 em{font-style:italic;color:var(--accent)}
-.hero .lead{margin-top:1.5rem;font-size:1.14rem}
-.hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:2.2rem}
-.hero-meta{display:flex;flex-wrap:wrap;gap:26px;margin-top:2.6rem;font-size:.84rem;color:var(--ink-mute)}
-.hero-meta div{display:flex;align-items:center;gap:9px;min-width:0}
+.view.on{opacity:1;visibility:visible;transform:none}
+.inner{max-width:1180px;margin:0 auto;height:100%;display:flex;flex-direction:column;justify-content:center;gap:clamp(18px,2.6vw,30px)}
+.view h2{font-size:clamp(1.6rem,3.2vw,2.3rem);line-height:1.15}
+.view .sub{color:var(--ink-soft);max-width:66ch;font-size:.98rem}
+@media (prefers-reduced-motion:reduce){.view{transition:none}}
+
+/* ---------- accueil ---------- */
+.home{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(24px,4vw,56px);align-items:center}
+.home::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(38rem 26rem at 76% 10%,var(--glow-a),transparent 70%),
+             radial-gradient(30rem 22rem at 4% 84%,var(--glow-b),transparent 70%)
+}
+.home h1{font-size:clamp(2.1rem,5.2vw,3.5rem);line-height:1.08;margin:.5rem 0 0}
+.home h1 em{font-style:italic;color:var(--accent)}
+.home .intro{color:var(--ink-soft);max-width:54ch;margin-top:1rem;font-size:1.02rem}
+.entries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:1.6rem}
+.entry{
+  display:flex;align-items:center;gap:13px;text-align:left;cursor:pointer;min-width:0;
+  padding:15px 17px;border:1px solid var(--line);border-radius:14px;background:var(--card);
+  font-family:var(--sans);color:var(--ink);transition:transform .3s cubic-bezier(.2,.7,.3,1), box-shadow .3s ease, border-color .3s ease
+}
+.entry:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--accent)}
+.entry svg{width:19px;height:19px;flex:none;color:var(--accent)}
+.entry b{display:block;font-weight:400;font-size:.95rem}
+.entry small{display:block;font-size:.76rem;color:var(--ink-mute);line-height:1.5}
+.figures{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:1.5rem;font-size:.82rem;color:var(--ink-mute)}
+.figures div{display:flex;align-items:center;gap:8px}
 .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none}
-.portrait{
-  position:relative;aspect-ratio:4/5;max-width:100%;border-radius:calc(var(--radius) + 8px);overflow:hidden;
-  background:var(--portrait);box-shadow:var(--shadow);display:grid;place-items:center;margin:0
+.shot{
+  position:relative;border-radius:calc(var(--radius) + 6px);overflow:hidden;background:var(--portrait);
+  box-shadow:var(--shadow);aspect-ratio:4/5;max-height:min(62vh,520px);max-width:100%;margin:0 0 0 auto;width:100%
 }
-.portrait .mono{font-family:var(--serif);font-size:clamp(4.6rem,10vw,8rem);color:var(--portrait-mono);line-height:1}
-.portrait figcaption{position:absolute;left:0;right:0;bottom:0;padding:20px 22px;font-size:.78rem;color:var(--ink-soft);background:var(--portrait-veil)}
+.shot .scene{position:absolute;inset:0;width:100%;height:100%}
+.shot figcaption{
+  position:absolute;left:0;right:0;bottom:0;padding:14px 16px;font-size:.75rem;color:var(--ink-soft);
+  background:linear-gradient(to top,var(--paper),transparent)
+}
 
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-block:1px solid var(--line)}
-.stat{background:var(--paper);padding:32px 24px}
-.stat b{display:block;font-family:var(--serif);font-size:2.2rem;font-weight:400;line-height:1;font-variant-numeric:tabular-nums}
-.stat small{display:block;margin-top:8px;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute)}
+/* ---------- blocs communs ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;min-width:0}
+.tile .ic{width:34px;height:34px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center;color:var(--accent);margin-bottom:12px}
+.tile .ic svg{width:18px;height:18px}
+.tile h3{font-size:1.08rem;margin-bottom:6px}
+.tile p{font-size:.88rem;color:var(--ink-soft);line-height:1.6}
+.two{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(22px,4vw,54px);align-items:start}
+.quote{font-family:var(--serif);font-size:clamp(1.25rem,2.3vw,1.75rem);line-height:1.35;font-style:italic;margin:0;padding-left:22px;border-left:1px solid var(--accent)}
+.sign{margin-top:14px;padding-left:23px;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute)}
+.checklist{list-style:none;padding:0;margin:0;display:grid;gap:2px}
+.checklist li{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line);font-size:.92rem;color:var(--ink-soft)}
+.checklist li svg{flex:none;width:17px;height:17px;margin-top:4px;color:var(--accent)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.step{background:var(--paper);padding:18px 20px;min-width:0}
+.step b{font-family:var(--serif);font-size:1.3rem;color:var(--accent);display:block;margin-bottom:6px}
+.step h3{font-size:1rem;margin-bottom:4px}
+.step p{font-size:.85rem;color:var(--ink-soft);line-height:1.55}
 
-.about{background:var(--paper-2)}
-.about-grid{display:grid;grid-template-columns:.92fr 1.08fr;gap:clamp(32px,6vw,76px)}
-.quote{font-family:var(--serif);font-size:clamp(1.45rem,2.6vw,2rem);line-height:1.35;font-style:italic;margin:0;padding-left:26px;border-left:1px solid var(--accent)}
-.sign{margin-top:20px;padding-left:27px;font-size:.84rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute)}
-
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(244px,1fr));gap:20px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:32px 28px;min-width:0;
-  transition:transform .4s cubic-bezier(.2,.7,.3,1), box-shadow .4s ease, border-color .4s ease}
-.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
-.card .ic{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;margin-bottom:20px;color:var(--accent)}
-.card h3{margin-bottom:10px}
-.card p{font-size:.95rem;color:var(--ink-soft);margin:0}
-
-.filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:32px}
-.chip{padding:9px 18px;border-radius:999px;border:1px solid var(--line);background:transparent;
-  font-family:var(--sans);font-size:.83rem;color:var(--ink-soft);cursor:pointer;transition:all .3s ease}
+/* ---------- biens ---------- */
+.biens-head{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:transparent;
+  font-family:var(--sans);font-size:.8rem;color:var(--ink-soft);cursor:pointer;transition:all .3s ease}
 .chip:hover{border-color:var(--accent);color:var(--accent)}
 .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
-.grid-biens{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
-.bien{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
-  display:flex;flex-direction:column;min-width:0;transition:transform .45s cubic-bezier(.2,.7,.3,1), box-shadow .45s ease}
-.bien:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
-.visual{position:relative;aspect-ratio:3/2;max-width:100%;display:grid;place-items:center}
+.carousel{position:relative;min-width:0}
+.track{
+  display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
+  padding-bottom:6px;scrollbar-width:thin
+}
+.bien{
+  flex:0 0 clamp(248px,30%,322px);scroll-snap-align:start;background:var(--card);
+  border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;min-width:0
+}
+.visual{position:relative;aspect-ratio:3/2;max-width:100%;overflow:hidden}
 .visual .scene{position:absolute;inset:0;width:100%;height:100%;display:block}
-.vis-note{position:absolute;right:12px;bottom:11px;z-index:2;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:var(--badge-bg);color:var(--ink-mute);border:1px solid var(--badge-bd)}
-.v1{background:var(--vis-1)} .v2{background:var(--vis-2)} .v3{background:var(--vis-3)}
-.badges{position:absolute;top:14px;left:14px;z-index:2;display:flex;flex-direction:column;gap:7px;align-items:flex-start}
-.badge{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;padding:6px 12px;border-radius:999px;
+.badges{position:absolute;top:11px;left:11px;z-index:2;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.badge{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border-radius:999px;
   background:var(--badge-bg);color:var(--badge-fg);border:1px solid var(--badge-bd)}
 .badge.ex{background:var(--accent);color:var(--paper);border-color:transparent}
 .badge.cp{background:var(--badge-cp-bg);color:var(--badge-cp-fg);border-color:transparent}
-.bien .body{padding:24px 24px 26px;display:flex;flex-direction:column;flex:1}
-.city{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute)}
-.bien h3{margin:9px 0 14px}
-.specs{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:.84rem;color:var(--ink-soft);margin-bottom:20px;font-variant-numeric:tabular-nums}
-.price{margin-top:auto;padding-top:18px;border-top:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.price b{font-family:var(--serif);font-size:1.48rem;font-weight:400;font-variant-numeric:tabular-nums}
-.price a{font-size:.82rem;color:var(--accent);border-bottom:1px solid transparent;transition:border-color .3s}
-.price a:hover{border-bottom-color:var(--accent)}
-.note{margin-top:28px;font-size:.84rem;color:var(--ink-mute);max-width:70ch}
+.vis-note{position:absolute;right:10px;bottom:9px;z-index:2;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:4px 8px;border-radius:999px;background:var(--badge-bg);color:var(--ink-mute);border:1px solid var(--badge-bd)}
+.bien .body{padding:16px 18px 18px;display:flex;flex-direction:column;flex:1}
+.city{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-mute)}
+.bien h3{font-size:1.1rem;margin:6px 0 10px;line-height:1.25}
+.specs{display:flex;flex-wrap:wrap;gap:5px 13px;font-size:.8rem;color:var(--ink-soft);margin-bottom:14px;font-variant-numeric:tabular-nums}
+.price{margin-top:auto;padding-top:13px;border-top:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.price b{font-family:var(--serif);font-size:1.3rem;font-weight:400;font-variant-numeric:tabular-nums}
+.ask{font-size:.78rem;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;font-family:var(--sans);border-bottom:1px solid transparent}
+.ask:hover{border-bottom-color:var(--accent)}
+.arrows{display:flex;gap:8px;align-items:center}
+.arrow{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+  cursor:pointer;display:grid;place-items:center;transition:all .25s ease}
+.arrow:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.arrow:disabled{opacity:.35;cursor:default}
+.arrow svg{width:17px;height:17px}
+.count{font-size:.8rem;color:var(--ink-mute);font-variant-numeric:tabular-nums}
+.note{font-size:.78rem;color:var(--ink-mute);max-width:78ch}
 
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-.step{background:var(--paper);padding:32px 26px;min-width:0}
-.step b{font-family:var(--serif);font-size:1.55rem;color:var(--accent);display:block;margin-bottom:12px}
-.step h3{font-size:1.06rem;margin-bottom:8px}
-.step p{font-size:.92rem;color:var(--ink-soft);margin:0}
-
-.estim{background:var(--paper-2)}
-.estim-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(32px,6vw,68px);align-items:start}
-form{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(22px,4vw,36px);min-width:0}
-.field{margin-bottom:18px;min-width:0}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-label{display:block;font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:8px}
-input,select,textarea{width:100%;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--paper);
-  font-family:var(--sans);font-size:.95rem;font-weight:300;color:var(--ink);transition:border-color .3s, box-shadow .3s}
+/* ---------- formulaire ---------- */
+form{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(18px,2.6vw,28px);min-width:0}
+.field{margin-bottom:13px;min-width:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+label{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px}
+input,select,textarea{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--paper);
+  font-family:var(--sans);font-size:.92rem;font-weight:300;color:var(--ink);transition:border-color .3s, box-shadow .3s}
 input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-textarea{resize:vertical;min-height:100px}
-.form-foot{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:8px}
-.form-foot small{font-size:.76rem;color:var(--ink-mute);max-width:34ch}
-.result{margin-top:22px;border:1px solid var(--line);border-radius:14px;padding:20px;background:var(--paper)}
-.result h3{font-size:1.08rem;margin-bottom:6px}
-.result p{font-size:.9rem;color:var(--ink-soft);margin:0 0 14px}
-.result pre{margin:0 0 14px;padding:14px;background:var(--paper-2);border:1px solid var(--line);border-radius:10px;
-  font-size:.82rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:230px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-soft)}
-.result-foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.addr{font-size:.92rem;user-select:all;color:var(--ink)}
-.checklist{list-style:none;padding:0;margin:1.5rem 0 0}
-.checklist li{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--line);font-size:.95rem;color:var(--ink-soft)}
-.checklist li svg{flex:none;width:18px;height:18px;margin-top:4px;color:var(--accent)}
+textarea{resize:vertical;min-height:74px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:12px 24px;border-radius:999px;
+  font-family:var(--sans);font-size:.86rem;border:1px solid var(--accent);background:var(--accent);color:var(--paper);
+  cursor:pointer;transition:transform .3s cubic-bezier(.2,.7,.3,1), box-shadow .3s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px -14px rgba(95,112,100,.7)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent);box-shadow:none}
+.btn.small{padding:9px 18px;font-size:.8rem}
+.form-foot{display:flex;flex-wrap:wrap;align-items:center;gap:13px;margin-top:4px}
+.form-foot small{font-size:.74rem;color:var(--ink-mute);max-width:36ch}
+.result{margin-top:14px;border:1px solid var(--line);border-radius:13px;padding:15px;background:var(--paper)}
+.result h3{font-size:1rem;margin-bottom:4px}
+.result p{font-size:.84rem;color:var(--ink-soft);margin-bottom:10px}
+.result pre{margin:0 0 10px;padding:11px;background:var(--paper-2);border:1px solid var(--line);border-radius:9px;
+  font-size:.76rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;max-height:150px;overflow:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-soft)}
+.result-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 
-.avis{max-width:720px;margin:0 auto;text-align:center}
-.starline{display:flex;gap:6px;justify-content:center;color:var(--accent);margin-bottom:22px}
-.starline svg{width:18px;height:18px}
-.avis .score{font-family:var(--serif);font-size:clamp(1.9rem,4vw,2.6rem);margin:0}
-.avis p{margin:14px auto 0;max-width:52ch;color:var(--ink-soft);font-size:.98rem}
-
-footer{background:var(--paper-2);border-top:1px solid var(--line)}
-.contact-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(32px,6vw,68px);align-items:start}
+/* ---------- contact ---------- */
 .contact-list{list-style:none;padding:0;margin:0;min-width:0}
-.contact-list li{display:flex;gap:16px;align-items:flex-start;padding:20px 0;border-bottom:1px solid var(--line);min-width:0}
+.contact-list li{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line);min-width:0}
 .contact-list li:first-child{border-top:1px solid var(--line)}
-.contact-list svg{flex:none;width:20px;height:20px;margin-top:4px;color:var(--accent)}
-.contact-list .k{font-size:.73rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute);display:block;margin-bottom:3px}
-.contact-list .v{font-size:1.02rem;color:var(--ink);word-break:break-word;display:block}
-.contact-list a.v:hover{color:var(--accent)}
-.copybtn{margin-top:8px;font-size:.78rem;padding:7px 14px;border-radius:999px;border:1px solid var(--line);
+.contact-list svg{flex:none;width:18px;height:18px;margin-top:4px;color:var(--accent)}
+.k{font-size:.69rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute);display:block;margin-bottom:2px}
+.v{font-size:.98rem;color:var(--ink);word-break:break-word;display:block}
+a.v:hover{color:var(--accent)}
+.addr{user-select:all}
+.copybtn{margin-top:6px;font-size:.74rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);
   background:transparent;color:var(--ink-soft);cursor:pointer;font-family:var(--sans)}
 .copybtn:hover{border-color:var(--accent);color:var(--accent)}
-.zones{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.zone{font-size:.8rem;padding:7px 14px;border:1px solid var(--line);border-radius:999px;color:var(--ink-soft);background:var(--paper)}
-.legal{border-top:1px solid var(--line);padding-block:28px 44px;font-size:.78rem;color:var(--ink-mute);line-height:1.8}
-.legal-top{display:flex;flex-wrap:wrap;gap:12px 32px;justify-content:space-between;align-items:baseline}
-.legal p{margin:.7em 0 0;max-width:92ch}
+.zones{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.zone{font-size:.77rem;padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--ink-soft);background:var(--card)}
+.legal{font-size:.73rem;color:var(--ink-mute);line-height:1.7;border-top:1px solid var(--line);padding-top:14px}
+.legal p{margin:.5em 0 0;max-width:95ch}
 
-.pre{opacity:0;transform:translateY(16px)}
-.pre.in{opacity:1;transform:none;transition:opacity .8s ease, transform .8s cubic-bezier(.2,.7,.3,1)}
-@media (prefers-reduced-motion:reduce){.pre{opacity:1;transform:none}}
-
-@media (max-width:980px){
-  .hero-grid,.about-grid,.estim-grid,.contact-grid{grid-template-columns:1fr}
-  .portrait{max-width:360px;order:-1}
-  .stats{grid-template-columns:repeat(2,1fr)}
+@media (max-width:900px){
+  .home,.two{grid-template-columns:1fr}
+  .shot{order:-1;max-height:30vh;aspect-ratio:16/9;margin:0}
+  .entries{grid-template-columns:1fr}
+  .view{padding-top:18px;padding-bottom:26px}
+  .inner{justify-content:flex-start}
 }
-@media (max-width:720px){
-  .nav-links{display:none;position:absolute;top:74px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;
-    background:var(--paper);border-bottom:1px solid var(--line);padding-block:8px}
-  .nav-links.open{display:flex}
-  .nav-links a{padding:14px clamp(16px,5vw,40px)}
-  .nav-links a::after{display:none}
-  .nav .btn{display:none}
-  .menu-btn{display:block}
+@media (max-width:640px){
+  .topbar{gap:12px;padding:10px 16px}
+  .logo .mark{width:34px;height:34px}
+  .topbar .call{display:none}
   .row2{grid-template-columns:1fr}
-  .hero-meta{gap:12px;flex-direction:column}
+  .bien{flex-basis:84%}
 }
 </style>
 
 <svg width="0" height="0" hidden aria-hidden="true" style="position:absolute">
-  <symbol id="i-house" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.6V21h13V9.6"/><path d="M10 21v-6h4v6"/></symbol>
-  <symbol id="i-estate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21h20"/><path d="M4 21V9l5-3.5L14 9v12"/><path d="M14 21V12h6v9"/><path d="M7 21v-4h4v4"/><path d="M16.5 15h1.2M16.5 18h1.2"/></symbol>
-  <symbol id="i-flat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4.5A1.5 1.5 0 0 1 5.5 3h8A1.5 1.5 0 0 1 15 4.5V21"/><path d="M15 10h4a1 1 0 0 1 1 1v10"/><path d="M7 7h2M11 7h1M7 11h2M11 11h1M7 15h2M11 15h1"/><path d="M2 21h20"/></symbol>
-  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.2"/><path d="M11 11l8 8"/><path d="M16.5 16.5l2-2 2 2-2 2z"/></symbol>
-  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
-  <symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></symbol>
-  <symbol id="i-hands" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l4-4 5 5 5-5 4 4"/><path d="M3 12v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
-  <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6 9 6.5L21 6"/></symbol>
-  <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5L17 13l4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 7.2 2 2 0 0 1 6 5z"/></symbol>
-  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+  <symbol id="i-house" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.6V21h13V9.6"/><path d="M10 21v-6h4v6"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.2"/><path d="M11 11l8 8"/><path d="M16.5 16.5l2-2 2 2-2 2z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-estate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21h20"/><path d="M4 21V9l5-3.5L14 9v12"/><path d="M14 21V12h6v9"/><path d="M7 21v-4h4v4"/></symbol>
+  <symbol id="i-hands" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l4-4 5 5 5-5 4 4"/><path d="M3 12v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6 9 6.5L21 6"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5L17 13l4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 7.2 2 2 0 0 1 6 5z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5 6.1 20.6l1.2-6.5L2.5 9.5l6.6-.9z"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
 
   <symbol id="s-domaine" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
     <rect width="300" height="200" fill="var(--sv-sky)"/>
@@ -397,421 +393,469 @@ footer{background:var(--paper-2);border-top:1px solid var(--line)}
       <rect x="104" y="72" width="96" height="3"/><rect x="104" y="112" width="96" height="3"/><rect x="104" y="152" width="96" height="3"/>
     </g>
   </symbol>
+
 </svg>
 
-<header id="top">
-  <div class="wrap nav">
-    <a class="brand" href="#top">Émilie&nbsp;De&nbsp;Crépy <span>iad France</span></a>
-    <nav class="nav-links" id="navLinks">
-      <a href="#apropos">À propos</a><a href="#services">Services</a><a href="#biens">Mes biens</a>
-      <a href="#estimation">Estimation</a><a href="#contact">Contact</a>
-    </nav>
-    <a class="btn small" href="#estimation">Estimation offerte</a>
-    <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
-    </button>
-  </div>
+<header class="topbar">
+  <button class="logo" data-go="accueil" aria-label="Accueil" style="background:none;border:0;cursor:pointer;padding:0">
+    <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <rect x="1.6" y="1.6" width="36.8" height="36.8" rx="11" stroke="currentColor" stroke-width="1.1" opacity=".5"/>
+      <text x="20" y="25.2" text-anchor="middle" font-family="Cormorant Garamond,Garamond,Georgia,serif" font-size="17.5" letter-spacing=".6" fill="currentColor">EC</text>
+      <path d="M12.5 29.6h15" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+    </svg>
+    <span style="text-align:left">
+      <span class="name">Émilie De Crépy</span><br>
+      <span class="role">Conseillère immobilière</span>
+    </span>
+  </button>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Navigation">
+    <button class="tab" role="tab" data-go="accueil" aria-selected="true">Accueil</button>
+    <button class="tab" role="tab" data-go="apropos" aria-selected="false">À propos</button>
+    <button class="tab" role="tab" data-go="services" aria-selected="false">Services</button>
+    <button class="tab" role="tab" data-go="biens" aria-selected="false">Mes biens</button>
+    <button class="tab" role="tab" data-go="estimation" aria-selected="false">Estimation</button>
+    <button class="tab" role="tab" data-go="contact" aria-selected="false">Contact</button>
+  </nav>
+
+  <span class="call"><svg><use href="#i-phone"/></svg> 06 83 20 83 50</span>
 </header>
 
-<section class="hero">
-  <div class="wrap hero-grid">
-    <div>
-      <p class="eyebrow">Conseillère immobilière · Orléans &amp; Loiret</p>
-      <h1>Vendre, acheter,<br>estimer — <em>en toute sérénité.</em></h1>
-      <p class="lead">
-        Je suis Émilie De Crépy, conseillère immobilière indépendante affiliée au réseau
-        iad France. J'accompagne les propriétaires et les acquéreurs d'Orléans, du Loiret
-        et de la Sologne, de la première estimation jusqu'à la signature — avec du temps,
-        de l'écoute et des conseils clairs.
-      </p>
-      <div class="hero-actions">
-        <a class="btn" href="#estimation">Estimer mon bien gratuitement</a>
-        <a class="btn ghost" href="#biens">Découvrir mes biens</a>
-      </div>
-      <div class="hero-meta">
-        <div><span class="dot"></span> Orléans (45100) et ses environs</div>
-        <div><span class="dot"></span> 9 biens actuellement proposés</div>
-        <div><span class="dot"></span> Avis clients : 5/5</div>
-      </div>
-    </div>
-    <figure class="portrait">
-      <span class="mono">EdC</span>
-      <figcaption>Émilie De Crépy — conseillère immobilière indépendante, réseau iad France.</figcaption>
-    </figure>
-  </div>
-</section>
+<main class="stage">
 
-<div class="stats">
-  <div class="stat"><b>9</b><small>Biens disponibles</small></div>
-  <div class="stat"><b>5/5</b><small>Satisfaction client</small></div>
-  <div class="stat"><b>3</b><small>Départements couverts</small></div>
-  <div class="stat"><b>0 €</b><small>Estimation de votre bien</small></div>
-</div>
-
-<section class="about" id="apropos">
-  <div class="wrap about-grid">
-    <div class="rv">
-      <blockquote class="quote">« Une vente réussie, c'est d'abord une relation de confiance et un bien estimé au juste prix. »</blockquote>
-      <p class="sign">Émilie De Crépy</p>
-    </div>
-    <div class="rv">
-      <p class="eyebrow">À propos</p>
-      <h2>Un accompagnement indépendant, humain et sans précipitation</h2>
-      <p class="lead" style="margin-top:1.3rem">
-        Conseillère immobilière indépendante, je ne travaille pas au volume : je prends
-        chaque projet comme un projet de vie. Cette indépendance me donne une souplesse
-        précieuse — des rendez-vous quand cela vous arrange, des visites préparées, et un
-        interlocuteur unique du début à la fin.
-      </p>
-      <p class="lead">
-        En m'appuyant sur le réseau iad France, premier réseau de mandataires immobiliers
-        en France, je bénéficie d'outils d'estimation, d'une diffusion large de vos annonces
-        sur les grands portails et de l'appui de spécialistes (prestige, financement,
-        juridique) quand votre dossier le demande.
-      </p>
-      <ul class="checklist">
-        <li><svg><use href="#i-check"/></svg> Estimation de votre bien offerte, étayée par les ventes réellement signées dans votre secteur.</li>
-        <li><svg><use href="#i-check"/></svg> Biens de caractère, domaines et propriétés de prestige : un segment que je connais bien.</li>
-        <li><svg><use href="#i-check"/></svg> Une communication régulière : retours de visites, points de marché, ajustements.</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section id="services">
-  <div class="wrap">
-    <div class="sec-head rv">
-      <p class="eyebrow">Services</p>
-      <h2>Ce que je prends en charge pour vous</h2>
-      <p class="lead" style="margin-top:1.1rem">De l'estimation à la remise des clés, chaque étape est préparée, expliquée et suivie.</p>
-    </div>
-    <div class="cards">
-      <article class="card rv"><div class="ic"><svg width="20" height="20"><use href="#i-chart"/></svg></div>
-        <h3>Estimation offerte</h3>
-        <p>Une valeur de marché argumentée, fondée sur les transactions comparables et les spécificités réelles de votre bien — sans engagement de votre part.</p></article>
-      <article class="card rv"><div class="ic"><svg width="20" height="20"><use href="#i-house"/></svg></div>
-        <h3>Vendre votre bien</h3>
-        <p>Préparation et mise en valeur, reportage photo, diffusion sur les grands portails, sélection des visites, négociation et suivi jusqu'à l'acte authentique.</p></article>
-      <article class="card rv"><div class="ic"><svg width="20" height="20"><use href="#i-key"/></svg></div>
-        <h3>Acheter</h3>
-        <p>Définition précise de votre recherche, accès aux biens du réseau avant diffusion quand c'est possible, visites commentées et accompagnement jusqu'au financement.</p></article>
-      <article class="card rv"><div class="ic"><svg width="20" height="20"><use href="#i-estate"/></svg></div>
-        <h3>Prestige &amp; propriétés</h3>
-        <p>Domaines, maisons de caractère et biens d'exception : une mise en scène soignée et une diffusion ciblée, en France comme à l'international.</p></article>
-      <article class="card rv"><div class="ic"><svg width="20" height="20"><use href="#i-doc"/></svg></div>
-        <h3>Location &amp; gestion</h3>
-        <p>Recherche de locataires, constitution et vérification des dossiers, rédaction du bail et état des lieux.</p></article>
-      <article class="card rv"><div class="ic"><svg width="20" height="20"><use href="#i-hands"/></svg></div>
-        <h3>Conseil &amp; investissement</h3>
-        <p>Arbitrage, premier achat, investissement locatif : un point objectif sur le marché local avant de vous engager.</p></article>
-    </div>
-  </div>
-</section>
-
-<hr class="rule">
-
-<section id="biens">
-  <div class="wrap">
-    <div class="sec-head rv">
-      <p class="eyebrow">Mes biens disponibles</p>
-      <h2>Une sélection de 9 biens</h2>
-      <p class="lead" style="margin-top:1.1rem">
-        Du deux-pièces orléanais au domaine en Sologne. Un bien vous intéresse&nbsp;?
-        Écrivez-moi, je vous envoie le dossier complet et nous organisons la visite.
-      </p>
-    </div>
-
-    <div class="filters rv" role="group" aria-label="Filtrer les biens">
-      <button class="chip" data-filter="all" aria-pressed="true">Tous les biens</button>
-      <button class="chip" data-filter="prestige" aria-pressed="false">Prestige</button>
-      <button class="chip" data-filter="maison" aria-pressed="false">Maisons &amp; domaines</button>
-      <button class="chip" data-filter="appartement" aria-pressed="false">Appartements</button>
-      <button class="chip" data-filter="exclusivite" aria-pressed="false">Exclusivités</button>
-    </div>
-
-    <div class="grid-biens" id="grid">
-      <article class="bien rv" data-tags="prestige maison exclusivite">
-        <div class="visual v1"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-domaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
-        <div class="body"><span class="city">Olivet (45160)</span><h3>Domaine de caractère de 1870</h3>
-          <div class="specs"><span>313 m²</span><span>11 pièces</span><span>6 chambres</span><span>4 salles de bain</span><span>Terrain 13 392 m²</span><span>Piscine</span></div>
-          <div class="price"><b>1 650 000 €</b><a href="#contact">Demander le dossier</a></div></div>
-      </article>
-      <article class="bien rv" data-tags="prestige maison">
-        <div class="visual v2"><div class="badges"><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
-        <div class="body"><span class="city">Bullion (78830)</span><h3>Vaste propriété en vallée de Chevreuse</h3>
-          <div class="specs"><span>480 m²</span><span>Maison</span><span>Yvelines</span></div>
-          <div class="price"><b>1 290 000 €</b><a href="#contact">Demander le dossier</a></div></div>
-      </article>
-      <article class="bien rv" data-tags="prestige maison exclusivite">
-        <div class="visual v3"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-foret" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
-        <div class="body"><span class="city">Lamotte-Beuvron (41600)</span><h3>Domaine de 60 hectares au cœur de la Sologne</h3>
-          <div class="specs"><span>280 m²</span><span>10 pièces</span><span>8 chambres</span><span>Terrain 60 ha</span></div>
-          <div class="price"><b>1 166 000 €</b><a href="#contact">Demander le dossier</a></div></div>
-      </article>
-      <article class="bien rv" data-tags="prestige maison">
-        <div class="visual v2"><div class="badges"><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
-        <div class="body"><span class="city">Saint-Jean-le-Blanc (45650)</span><h3>Grande demeure aux portes d'Orléans</h3>
-          <div class="specs"><span>490 m²</span><span>Maison</span><span>Loiret</span></div>
-          <div class="price"><b>995 000 €</b><a href="#contact">Demander le dossier</a></div></div>
-      </article>
-      <article class="bien rv" data-tags="prestige maison exclusivite">
-        <div class="visual v1"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge cp">Sous compromis</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-solognote" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
-        <div class="body"><span class="city">Saint-Viâtre (41210)</span><h3>Maison solognote de 310 m²</h3>
-          <div class="specs"><span>310 m²</span><span>Maison</span><span>Sologne</span></div>
-          <div class="price"><b>627 000 €</b><a href="#contact">Demander le dossier</a></div></div>
-      </article>
-      <article class="bien rv" data-tags="prestige maison">
-        <div class="visual v3"><div class="badges"><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-maison" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
-        <div class="body"><span class="city">Olivet (45160)</span><h3>Maison familiale au bord du Loiret</h3>
-          <div class="specs"><span>184 m²</span><span>Maison</span><span>Olivet</span></div>
-          <div class="price"><b>570 000 €</b><a href="#contact">Demander le dossier</a></div></div>
-      </article>
-      <article class="bien rv" data-tags="maison exclusivite">
-        <div class="visual v1"><div class="badges"><span class="badge ex">Exclusivité</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-contemporaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
-        <div class="body"><span class="city">Saint-Cyr-en-Val (45590)</span><h3>Maison contemporaine de 178 m²</h3>
-          <div class="specs"><span>178 m²</span><span>Maison</span><span>Loiret</span></div>
-          <div class="price"><b>495 000 €</b><a href="#contact">Demander le dossier</a></div></div>
-      </article>
-      <article class="bien rv" data-tags="appartement">
-        <div class="visual v3"><div class="badges"><span class="badge">Appartement</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
-        <div class="body"><span class="city">Orléans (45000)</span><h3>Deux-pièces en cœur de ville</h3>
-          <div class="specs"><span>41 m²</span><span>2 pièces</span><span>1 chambre</span></div>
-          <div class="price"><b>118 000 €</b><a href="#contact">Demander le dossier</a></div></div>
-      </article>
-      <article class="bien rv" data-tags="appartement">
-        <div class="visual v2"><div class="badges"><span class="badge">Appartement</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
-        <div class="body"><span class="city">Olivet (45160)</span><h3>Trois-pièces lumineux</h3>
-          <div class="specs"><span>58 m²</span><span>3 pièces</span><span>2 chambres</span></div>
-          <div class="price"><b>99 700 €</b><a href="#contact">Demander le dossier</a></div></div>
-      </article>
-    </div>
-    <p class="note rv">
-      Biens et prix indicatifs, susceptibles d'évoluer — honoraires de l'agence inclus,
-      charge vendeur. Les diagnostics de performance énergétique et les détails complets
-      de chaque bien vous sont communiqués sur demande.
-    </p>
-  </div>
-</section>
-
-<hr class="rule">
-
-<section>
-  <div class="wrap">
-    <div class="sec-head rv"><p class="eyebrow">Méthode</p><h2>Votre vente en quatre temps</h2></div>
-    <div class="steps">
-      <div class="step rv"><b>01</b><h3>On se rencontre</h3><p>Visite de votre bien, écoute de votre projet et de votre calendrier. Sans engagement.</p></div>
-      <div class="step rv"><b>02</b><h3>J'estime au juste prix</h3><p>Étude de marché argumentée, comparables signés, stratégie de prix et de diffusion.</p></div>
-      <div class="step rv"><b>03</b><h3>On met en valeur</h3><p>Préparation, photos, annonce rédigée avec soin et diffusion large. Visites filtrées.</p></div>
-      <div class="step rv"><b>04</b><h3>Jusqu'à la signature</h3><p>Négociation, compromis, suivi du financement et accompagnement chez le notaire.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="estim" id="estimation">
-  <div class="wrap estim-grid">
-    <div class="rv">
-      <p class="eyebrow">Estimation offerte</p>
-      <h2>Combien vaut votre bien aujourd'hui&nbsp;?</h2>
-      <p class="lead" style="margin-top:1.2rem">
-        Remplissez ce formulaire&nbsp;: il compose votre demande, que vous n'avez plus qu'à
-        copier dans un e-mail. Je reviens vers vous rapidement avec une première fourchette
-        de prix, puis nous convenons d'une visite pour affiner l'estimation. C'est gratuit,
-        confidentiel et sans aucun engagement.
-      </p>
-      <ul class="checklist">
-        <li><svg><use href="#i-check"/></svg> Analyse des ventes réellement conclues dans votre quartier.</li>
-        <li><svg><use href="#i-check"/></svg> Prise en compte de l'état, de l'exposition, des travaux et du DPE.</li>
-        <li><svg><use href="#i-check"/></svg> Un rapport clair, que vous vendiez maintenant ou plus tard.</li>
-      </ul>
-    </div>
-
-    <form id="estimForm" novalidate>
-      <div class="row2">
-        <div class="field"><label for="nom">Nom et prénom</label><input id="nom" name="nom" type="text" autocomplete="name"></div>
-        <div class="field"><label for="tel">Téléphone</label><input id="tel" name="tel" type="tel" autocomplete="tel"></div>
-      </div>
-      <div class="field"><label for="email">Votre e-mail</label><input id="email" name="email" type="email" autocomplete="email"></div>
-      <div class="row2">
-        <div class="field"><label for="type">Type de bien</label>
-          <select id="type" name="type"><option>Maison</option><option>Appartement</option><option>Domaine / propriété</option><option>Terrain</option><option>Immeuble</option><option>Autre</option></select></div>
-        <div class="field"><label for="surface">Surface (m²)</label><input id="surface" name="surface" type="number" min="1" inputmode="numeric"></div>
-      </div>
-      <div class="row2">
-        <div class="field"><label for="ville">Ville</label><input id="ville" name="ville" type="text" placeholder="Orléans, Olivet…"></div>
-        <div class="field"><label for="pieces">Nombre de pièces</label><input id="pieces" name="pieces" type="number" min="1" inputmode="numeric"></div>
-      </div>
-      <div class="field"><label for="message">Votre projet (optionnel)</label><textarea id="message" name="message" placeholder="Quelques mots sur votre bien, votre calendrier…"></textarea></div>
-      <div class="form-foot">
-        <button class="btn" type="submit">Envoyer ma demande</button>
-        <small>Votre messagerie s'ouvre avec la demande déjà rédigée, adressée à Émilie.</small>
-      </div>
-      <p id="formMsg" style="margin:14px 0 0;font-size:.86rem;color:var(--ink-mute)" role="status" aria-live="polite"></p>
-
-      <div class="result" id="result" hidden>
-        <h3>Votre demande part par e-mail</h3>
-        <p>Votre messagerie s'ouvre, adressée à <span class="addr" id="destAddr">emilie.de-crepy@iadfrance.fr</span>. Si rien ne s'ouvre, copiez le message ci-dessous et envoyez-le à cette adresse.</p>
-        <pre id="resultText"></pre>
-        <div class="result-foot">
-          <button type="button" class="btn small" id="copyMsg">Copier le message</button>
-          <a class="btn small ghost" id="mailtoLink" href="#">Rouvrir ma messagerie</a>
-          <small style="font-size:.76rem;color:var(--ink-mute)">Si votre messagerie ne s'ouvre pas, utilisez la copie.</small>
-        </div>
-      </div>
-    </form>
-  </div>
-</section>
-
-<section>
-  <div class="wrap avis rv">
-    <div class="starline" aria-hidden="true">
-      <svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg>
-    </div>
-    <p class="score">5/5 sur l'ensemble des avis clients</p>
-    <p>Note publiée sur l'annuaire des conseillers iad France. Les avis détaillés sont consultables sur mon profil officiel iad.</p>
-  </div>
-</section>
-
-<footer id="contact">
-  <div class="wrap" style="padding-block:clamp(60px,9vw,108px) clamp(44px,7vw,76px)">
-    <div class="contact-grid">
-      <div class="rv">
-        <p class="eyebrow">Contact</p>
-        <h2>Parlons de votre projet</h2>
-        <p class="lead" style="margin-top:1.1rem">
-          Un e-mail, un appel ou un message&nbsp;: je vous réponds personnellement, du lundi
-          au samedi. Je me déplace dans tout le Loiret et ses environs.
+  <!-- ===================== ACCUEIL ===================== -->
+  <section class="view on" id="v-accueil" role="tabpanel" aria-label="Accueil">
+    <div class="inner home">
+      <div>
+        <p class="eyebrow">Orléans · Loiret · Sologne</p>
+        <h1>Vendre, acheter,<br>estimer — <em>en toute sérénité.</em></h1>
+        <p class="intro">
+          Conseillère immobilière indépendante affiliée au réseau iad France, j'accompagne
+          propriétaires et acquéreurs de la première estimation jusqu'à la signature —
+          avec du temps, de l'écoute et des conseils clairs.
         </p>
-        <div class="zones" aria-label="Zones d'intervention">
-          <span class="zone">Orléans</span><span class="zone">Olivet</span><span class="zone">Saint-Jean-le-Blanc</span>
-          <span class="zone">Saint-Cyr-en-Val</span><span class="zone">Ardon</span><span class="zone">Loiret (45)</span>
-          <span class="zone">Sologne (41)</span><span class="zone">Yvelines (78)</span>
+        <div class="entries">
+          <button class="entry" data-go="biens"><svg><use href="#i-house"/></svg>
+            <span><b>Mes biens</b><small>9 biens, du T2 au domaine</small></span></button>
+          <button class="entry" data-go="estimation"><svg><use href="#i-chart"/></svg>
+            <span><b>Estimation offerte</b><small>Réponse rapide, sans engagement</small></span></button>
+          <button class="entry" data-go="services"><svg><use href="#i-key"/></svg>
+            <span><b>Services</b><small>Vendre, acheter, louer, investir</small></span></button>
+          <button class="entry" data-go="contact"><svg><use href="#i-mail"/></svg>
+            <span><b>Me contacter</b><small>E-mail, téléphone, secteurs</small></span></button>
+        </div>
+        <div class="figures">
+          <div><span class="dot"></span> 9 biens disponibles</div>
+          <div><span class="dot"></span> Avis clients 5/5</div>
+          <div><span class="dot"></span> Estimation gratuite</div>
         </div>
       </div>
-
-      <ul class="contact-list rv">
-        <li><svg><use href="#i-mail"/></svg>
-          <div style="min-width:0"><span class="k">E-mail</span>
-            <span class="v addr" id="mailText">emilie.de-crepy@iadfrance.fr</span>
-            <button class="copybtn" id="copyMail" type="button">Copier l'adresse</button>
-          </div></li>
-        <li><svg><use href="#i-phone"/></svg>
-          <div style="min-width:0"><span class="k">Téléphone</span>
-            <span class="v addr" id="telText">06 83 20 83 50</span>
-            <button class="copybtn" id="copyTel" type="button">Copier le numéro</button>
-          </div></li>
-        <li><svg><use href="#i-pin"/></svg>
-          <div style="min-width:0"><span class="k">Adresse professionnelle</span><span class="v">14 rue Coursimault — 45100 Orléans</span></div></li>
-        <li><svg><use href="#i-doc"/></svg>
-          <div style="min-width:0"><span class="k">Profil officiel iad France</span>
-            <a class="v" href="https://www.iadfrance.fr/conseiller-immobilier/emilie.de-crepy">iadfrance.fr/conseiller-immobilier/emilie.de-crepy</a></div></li>
-      </ul>
+      <figure class="shot">
+        <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Illustration d'une demeure"><use href="#s-domaine" width="300" height="200"/></svg>
+        <figcaption>Émilie De Crépy — conseillère immobilière indépendante, réseau iad France. Illustration.</figcaption>
+      </figure>
     </div>
-  </div>
+  </section>
 
-  <div class="wrap legal">
-    <div class="legal-top">
-      <span>© <span id="year">2026</span> Émilie De Crépy — Conseillère immobilière indépendante</span>
-      <span><a href="#top">Haut de page ↑</a></span>
+  <!-- ===================== À PROPOS ===================== -->
+  <section class="view" id="v-apropos" role="tabpanel" aria-label="À propos" hidden>
+    <div class="inner">
+      <div>
+        <p class="eyebrow">À propos</p>
+        <h2>Un accompagnement indépendant, humain et sans précipitation</h2>
+      </div>
+      <div class="two">
+        <div>
+          <blockquote class="quote">« Une vente réussie, c'est d'abord une relation de confiance et un bien estimé au juste prix. »</blockquote>
+          <p class="sign">Émilie De Crépy</p>
+        </div>
+        <div>
+          <p class="sub" style="margin-bottom:.9rem">
+            Conseillère immobilière indépendante, je ne travaille pas au volume : je prends chaque
+            projet comme un projet de vie. Cette indépendance me donne une souplesse précieuse —
+            des rendez-vous quand cela vous arrange, des visites préparées, un interlocuteur unique
+            du début à la fin.
+          </p>
+          <p class="sub">
+            En m'appuyant sur le réseau iad France, premier réseau de mandataires immobiliers en
+            France, je bénéficie d'outils d'estimation, d'une diffusion large de vos annonces sur
+            les grands portails et de l'appui de spécialistes (prestige, financement, juridique).
+          </p>
+          <ul class="checklist" style="margin-top:1rem">
+            <li><svg><use href="#i-check"/></svg> Estimation offerte, étayée par les ventes réellement signées dans votre secteur.</li>
+            <li><svg><use href="#i-check"/></svg> Domaines et propriétés de caractère : un segment que je connais bien.</li>
+            <li><svg><use href="#i-star"/></svg> 5/5 sur l'ensemble des avis publiés sur l'annuaire des conseillers iad France.</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow" style="margin-bottom:12px">Votre vente en quatre temps</p>
+        <div class="steps">
+          <div class="step"><b>01</b><h3>On se rencontre</h3><p>Visite de votre bien, écoute de votre projet et de votre calendrier. Sans engagement.</p></div>
+          <div class="step"><b>02</b><h3>J'estime au juste prix</h3><p>Étude de marché argumentée, comparables signés, stratégie de prix.</p></div>
+          <div class="step"><b>03</b><h3>On met en valeur</h3><p>Préparation, photos, annonce soignée et diffusion large. Visites filtrées.</p></div>
+          <div class="step"><b>04</b><h3>Jusqu'à la signature</h3><p>Négociation, compromis, suivi du financement, accompagnement chez le notaire.</p></div>
+        </div>
+      </div>
     </div>
-    <p>
-      Émilie De Crépy, agent commercial indépendant de la SAS I@D France, enregistrée au
-      RSAC d'Orléans sous le numéro 991 481 615 — SIREN 991 481 615. Entreprise individuelle,
-      activité de mandataire immobilier conseil, titulaire de la carte de démarchage
-      immobilier pour le compte de la société I@D France.
-    </p>
-    <p>
-      Les annonces présentées sur ce site sont données à titre indicatif et ne constituent
-      pas une offre contractuelle. Honoraires, diagnostics et informations détaillées
-      communiqués sur demande ou disponibles sur le profil officiel iad France.
-    </p>
-  </div>
-</footer>
+  </section>
+
+  <!-- ===================== SERVICES ===================== -->
+  <section class="view" id="v-services" role="tabpanel" aria-label="Services" hidden>
+    <div class="inner">
+      <div>
+        <p class="eyebrow">Services</p>
+        <h2>Ce que je prends en charge pour vous</h2>
+        <p class="sub" style="margin-top:.6rem">De l'estimation à la remise des clés, chaque étape est préparée, expliquée et suivie.</p>
+      </div>
+      <div class="tiles">
+        <article class="tile"><div class="ic"><svg><use href="#i-chart"/></svg></div><h3>Estimation offerte</h3>
+          <p>Une valeur de marché argumentée, fondée sur les transactions comparables et les spécificités réelles de votre bien.</p></article>
+        <article class="tile"><div class="ic"><svg><use href="#i-house"/></svg></div><h3>Vendre votre bien</h3>
+          <p>Mise en valeur, reportage photo, diffusion sur les grands portails, sélection des visites, négociation et suivi jusqu'à l'acte.</p></article>
+        <article class="tile"><div class="ic"><svg><use href="#i-key"/></svg></div><h3>Acheter</h3>
+          <p>Recherche cadrée, accès aux biens du réseau avant diffusion quand c'est possible, visites commentées, appui au financement.</p></article>
+        <article class="tile"><div class="ic"><svg><use href="#i-estate"/></svg></div><h3>Prestige &amp; propriétés</h3>
+          <p>Domaines, maisons de caractère et biens d'exception : mise en scène soignée et diffusion ciblée, en France comme à l'international.</p></article>
+        <article class="tile"><div class="ic"><svg><use href="#i-doc"/></svg></div><h3>Location &amp; gestion</h3>
+          <p>Recherche de locataires, vérification des dossiers, rédaction du bail et état des lieux.</p></article>
+        <article class="tile"><div class="ic"><svg><use href="#i-hands"/></svg></div><h3>Conseil &amp; investissement</h3>
+          <p>Arbitrage, premier achat, investissement locatif : un point objectif sur le marché local avant de vous engager.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== BIENS ===================== -->
+  <section class="view" id="v-biens" role="tabpanel" aria-label="Mes biens" hidden>
+    <div class="inner">
+      <div class="biens-head">
+        <div>
+          <p class="eyebrow">Mes biens disponibles</p>
+          <h2>Une sélection de 9 biens</h2>
+        </div>
+        <div class="arrows">
+          <span class="count" id="count">1–3 sur 9</span>
+          <button class="arrow" id="prev" aria-label="Biens précédents"><svg><use href="#i-left"/></svg></button>
+          <button class="arrow" id="next" aria-label="Biens suivants"><svg><use href="#i-right"/></svg></button>
+        </div>
+      </div>
+      <div class="filters" role="group" aria-label="Filtrer les biens">
+        <button class="chip" data-filter="all" aria-pressed="true">Tous</button>
+        <button class="chip" data-filter="prestige" aria-pressed="false">Prestige</button>
+        <button class="chip" data-filter="maison" aria-pressed="false">Maisons &amp; domaines</button>
+        <button class="chip" data-filter="appartement" aria-pressed="false">Appartements</button>
+        <button class="chip" data-filter="exclusivite" aria-pressed="false">Exclusivités</button>
+      </div>
+      <div class="carousel">
+        <div class="track" id="track" tabindex="0" aria-label="Liste des biens, faites défiler horizontalement">
+
+          <article class="bien" data-tags="prestige maison exclusivite" data-ref="Domaine de caractère de 1870 — Olivet (45160) — 1 650 000 €">
+            <div class="visual"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div>
+              <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-domaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
+            <div class="body"><span class="city">Olivet (45160)</span><h3>Domaine de caractère de 1870</h3>
+              <div class="specs"><span>313 m²</span><span>11 pièces</span><span>6 chambres</span><span>4 salles de bain</span><span>Terrain 13 392 m²</span><span>Piscine</span></div>
+              <div class="price"><b>1 650 000 €</b><button class="ask">Demander le dossier</button></div></div>
+          </article>
+
+          <article class="bien" data-tags="prestige maison" data-ref="Vaste propriété en vallée de Chevreuse — Bullion (78830) — 1 290 000 €">
+            <div class="visual"><div class="badges"><span class="badge">Prestige</span></div>
+              <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
+            <div class="body"><span class="city">Bullion (78830)</span><h3>Vaste propriété en vallée de Chevreuse</h3>
+              <div class="specs"><span>480 m²</span><span>Maison</span><span>Yvelines</span></div>
+              <div class="price"><b>1 290 000 €</b><button class="ask">Demander le dossier</button></div></div>
+          </article>
+
+          <article class="bien" data-tags="prestige maison exclusivite" data-ref="Domaine de 60 hectares en Sologne — Lamotte-Beuvron (41600) — 1 166 000 €">
+            <div class="visual"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div>
+              <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-foret" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
+            <div class="body"><span class="city">Lamotte-Beuvron (41600)</span><h3>Domaine de 60 hectares au cœur de la Sologne</h3>
+              <div class="specs"><span>280 m²</span><span>10 pièces</span><span>8 chambres</span><span>Terrain 60 ha</span></div>
+              <div class="price"><b>1 166 000 €</b><button class="ask">Demander le dossier</button></div></div>
+          </article>
+
+          <article class="bien" data-tags="prestige maison" data-ref="Grande demeure aux portes d'Orléans — Saint-Jean-le-Blanc (45650) — 995 000 €">
+            <div class="visual"><div class="badges"><span class="badge">Prestige</span></div>
+              <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
+            <div class="body"><span class="city">Saint-Jean-le-Blanc (45650)</span><h3>Grande demeure aux portes d'Orléans</h3>
+              <div class="specs"><span>490 m²</span><span>Maison</span><span>Loiret</span></div>
+              <div class="price"><b>995 000 €</b><button class="ask">Demander le dossier</button></div></div>
+          </article>
+
+          <article class="bien" data-tags="prestige maison exclusivite" data-ref="Maison solognote de 310 m² — Saint-Viâtre (41210) — 627 000 €">
+            <div class="visual"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge cp">Sous compromis</span></div>
+              <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-solognote" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
+            <div class="body"><span class="city">Saint-Viâtre (41210)</span><h3>Maison solognote de 310 m²</h3>
+              <div class="specs"><span>310 m²</span><span>Maison</span><span>Sologne</span></div>
+              <div class="price"><b>627 000 €</b><button class="ask">Demander le dossier</button></div></div>
+          </article>
+
+          <article class="bien" data-tags="prestige maison" data-ref="Maison familiale au bord du Loiret — Olivet (45160) — 570 000 €">
+            <div class="visual"><div class="badges"><span class="badge">Prestige</span></div>
+              <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-maison" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
+            <div class="body"><span class="city">Olivet (45160)</span><h3>Maison familiale au bord du Loiret</h3>
+              <div class="specs"><span>184 m²</span><span>Maison</span><span>Olivet</span></div>
+              <div class="price"><b>570 000 €</b><button class="ask">Demander le dossier</button></div></div>
+          </article>
+
+          <article class="bien" data-tags="maison exclusivite" data-ref="Maison contemporaine de 178 m² — Saint-Cyr-en-Val (45590) — 495 000 €">
+            <div class="visual"><div class="badges"><span class="badge ex">Exclusivité</span></div>
+              <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-contemporaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
+            <div class="body"><span class="city">Saint-Cyr-en-Val (45590)</span><h3>Maison contemporaine de 178 m²</h3>
+              <div class="specs"><span>178 m²</span><span>Maison</span><span>Loiret</span></div>
+              <div class="price"><b>495 000 €</b><button class="ask">Demander le dossier</button></div></div>
+          </article>
+
+          <article class="bien" data-tags="appartement" data-ref="Deux-pièces en cœur de ville — Orléans (45000) — 118 000 €">
+            <div class="visual"><div class="badges"><span class="badge">Appartement</span></div>
+              <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
+            <div class="body"><span class="city">Orléans (45000)</span><h3>Deux-pièces en cœur de ville</h3>
+              <div class="specs"><span>41 m²</span><span>2 pièces</span><span>1 chambre</span></div>
+              <div class="price"><b>118 000 €</b><button class="ask">Demander le dossier</button></div></div>
+          </article>
+
+          <article class="bien" data-tags="appartement" data-ref="Trois-pièces lumineux — Olivet (45160) — 99 700 €">
+            <div class="visual"><div class="badges"><span class="badge">Appartement</span></div>
+              <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
+            <div class="body"><span class="city">Olivet (45160)</span><h3>Trois-pièces lumineux</h3>
+              <div class="specs"><span>58 m²</span><span>3 pièces</span><span>2 chambres</span></div>
+              <div class="price"><b>99 700 €</b><button class="ask">Demander le dossier</button></div></div>
+          </article>
+
+        </div>
+      </div>
+      <p class="note">
+        Prix indicatifs, honoraires d'agence inclus, charge vendeur. Illustrations : les photos
+        et les diagnostics (DPE) de chaque bien vous sont envoyés sur demande.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== ESTIMATION ===================== -->
+  <section class="view" id="v-estimation" role="tabpanel" aria-label="Estimation" hidden>
+    <div class="inner">
+      <div class="two">
+        <div>
+          <p class="eyebrow">Estimation offerte</p>
+          <h2>Combien vaut votre bien aujourd'hui&nbsp;?</h2>
+          <p class="sub" style="margin-top:.8rem">
+            Remplissez ces quelques champs : votre messagerie s'ouvre avec la demande déjà
+            rédigée, adressée à Émilie. Réponse rapide avec une première fourchette de prix,
+            puis une visite pour affiner. Gratuit, confidentiel, sans engagement.
+          </p>
+          <ul class="checklist" style="margin-top:1rem">
+            <li><svg><use href="#i-check"/></svg> Analyse des ventes réellement conclues dans votre quartier.</li>
+            <li><svg><use href="#i-check"/></svg> Prise en compte de l'état, de l'exposition, des travaux et du DPE.</li>
+            <li><svg><use href="#i-check"/></svg> Un rapport clair, que vous vendiez maintenant ou plus tard.</li>
+          </ul>
+        </div>
+        <form id="estimForm" novalidate>
+          <div class="row2">
+            <div class="field"><label for="nom">Nom et prénom</label><input id="nom" name="nom" type="text" autocomplete="name"></div>
+            <div class="field"><label for="tel">Téléphone</label><input id="tel" name="tel" type="tel" autocomplete="tel"></div>
+          </div>
+          <div class="field"><label for="email">Votre e-mail</label><input id="email" name="email" type="email" autocomplete="email"></div>
+          <div class="row2">
+            <div class="field"><label for="type">Type de bien</label>
+              <select id="type" name="type"><option>Maison</option><option>Appartement</option><option>Domaine / propriété</option><option>Terrain</option><option>Immeuble</option><option>Autre</option></select></div>
+            <div class="field"><label for="surface">Surface (m²)</label><input id="surface" name="surface" type="number" min="1" inputmode="numeric"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="ville">Ville</label><input id="ville" name="ville" type="text" placeholder="Orléans, Olivet…"></div>
+            <div class="field"><label for="pieces">Pièces</label><input id="pieces" name="pieces" type="number" min="1" inputmode="numeric"></div>
+          </div>
+          <div class="field"><label for="message">Votre projet (optionnel)</label><textarea id="message" name="message" placeholder="Quelques mots sur votre bien, votre calendrier…"></textarea></div>
+          <div class="form-foot">
+            <button class="btn" type="submit">Envoyer ma demande</button>
+            <small>Votre messagerie s'ouvre, déjà rédigée et adressée à Émilie.</small>
+          </div>
+          <p id="formMsg" style="margin-top:10px;font-size:.84rem;color:var(--ink-mute)" role="status" aria-live="polite"></p>
+          <div class="result" id="result" hidden>
+            <h3>Votre demande part par e-mail</h3>
+            <p>Adressée à <span class="addr" id="destAddr">emilie.de-crepy@iadfrance.fr</span>. Si rien ne s'ouvre, copiez le message ci-dessous.</p>
+            <pre id="resultText"></pre>
+            <div class="result-foot">
+              <button type="button" class="btn small" id="copyMsg">Copier le message</button>
+              <a class="btn small ghost" id="mailtoLink" href="#">Rouvrir ma messagerie</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CONTACT ===================== -->
+  <section class="view" id="v-contact" role="tabpanel" aria-label="Contact" hidden>
+    <div class="inner">
+      <div class="two">
+        <div>
+          <p class="eyebrow">Contact</p>
+          <h2>Parlons de votre projet</h2>
+          <p class="sub" style="margin-top:.8rem">
+            Un e-mail, un appel ou un message : je vous réponds personnellement, du lundi au
+            samedi, et je me déplace dans tout le Loiret et ses environs.
+          </p>
+          <div class="zones" aria-label="Zones d'intervention">
+            <span class="zone">Orléans</span><span class="zone">Olivet</span><span class="zone">Saint-Jean-le-Blanc</span>
+            <span class="zone">Saint-Cyr-en-Val</span><span class="zone">Ardon</span><span class="zone">Loiret (45)</span>
+            <span class="zone">Sologne (41)</span><span class="zone">Yvelines (78)</span>
+          </div>
+          <div class="legal" style="margin-top:20px">
+            <p>Émilie De Crépy, agent commercial indépendant de la SAS I@D France, enregistrée au RSAC
+            d'Orléans sous le numéro 991 481 615 — SIREN 991 481 615. Entreprise individuelle, activité
+            de mandataire immobilier conseil, titulaire de la carte de démarchage immobilier pour le
+            compte de la société I@D France.</p>
+            <p>Les annonces présentées ici sont indicatives et ne constituent pas une offre
+            contractuelle. Honoraires et diagnostics communiqués sur demande.</p>
+          </div>
+        </div>
+        <ul class="contact-list">
+          <li><svg><use href="#i-mail"/></svg>
+            <div style="min-width:0"><span class="k">E-mail</span>
+              <span class="v addr" id="mailText">emilie.de-crepy@iadfrance.fr</span>
+              <button class="copybtn" id="copyMail" type="button">Copier l'adresse</button></div></li>
+          <li><svg><use href="#i-phone"/></svg>
+            <div style="min-width:0"><span class="k">Téléphone</span>
+              <span class="v addr" id="telText">06 83 20 83 50</span>
+              <button class="copybtn" id="copyTel" type="button">Copier le numéro</button></div></li>
+          <li><svg><use href="#i-pin"/></svg>
+            <div style="min-width:0"><span class="k">Adresse professionnelle</span>
+              <span class="v">14 rue Coursimault — 45100 Orléans</span></div></li>
+          <li><svg><use href="#i-doc"/></svg>
+            <div style="min-width:0"><span class="k">Profil officiel iad France</span>
+              <a class="v" href="https://www.iadfrance.fr/conseiller-immobilier/emilie.de-crepy">iadfrance.fr/conseiller-immobilier/emilie.de-crepy</a></div></li>
+          <li><svg><use href="#i-star"/></svg>
+            <div style="min-width:0"><span class="k">Avis clients</span>
+              <span class="v">5/5 sur l'annuaire des conseillers iad France</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
 
 <script>
 (function(){
   "use strict";
   var DEST = "emilie.de-crepy@iadfrance.fr";
+  var VIEWS = ["accueil","apropos","services","biens","estimation","contact"];
 
-  document.getElementById("year").textContent = new Date().getFullYear();
-
-  var header = document.querySelector("header");
-  var onScroll = function(){ header.classList.toggle("scrolled", window.scrollY > 8); };
-  onScroll();
-  window.addEventListener("scroll", onScroll, {passive:true});
-
-  var menuBtn = document.getElementById("menuBtn"), navLinks = document.getElementById("navLinks");
-  menuBtn.addEventListener("click", function(){
-    var open = navLinks.classList.toggle("open");
-    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
-  });
-  navLinks.addEventListener("click", function(e){
-    if (e.target.tagName === "A"){ navLinks.classList.remove("open"); menuBtn.setAttribute("aria-expanded","false"); }
-  });
-
-  /* Apparition douce — seulement pour ce qui se trouve sous la ligne de flottaison,
-     afin que la première image de la page soit complète. */
-  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches){
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if (entry.isIntersecting){ entry.target.classList.add("in"); io.unobserve(entry.target); }
-      });
-    }, {rootMargin:"0px 0px -6% 0px", threshold:0.06});
-    Array.prototype.forEach.call(document.querySelectorAll(".rv"), function(el){
-      if (el.getBoundingClientRect().top > window.innerHeight){ el.classList.add("pre"); io.observe(el); }
+  /* ---------- navigation par vues ---------- */
+  var tabs = document.querySelectorAll(".tab");
+  function show(name, push){
+    if (VIEWS.indexOf(name) === -1) name = "accueil";
+    VIEWS.forEach(function(v){
+      var el = document.getElementById("v-" + v);
+      var active = (v === name);
+      if (active){ el.hidden = false; requestAnimationFrame(function(){ el.classList.add("on"); }); }
+      else { el.classList.remove("on"); el.hidden = true; }
+      el.scrollTop = 0;
     });
+    Array.prototype.forEach.call(tabs, function(t){
+      t.setAttribute("aria-selected", t.dataset.go === name ? "true" : "false");
+    });
+    if (push !== false){ try { history.replaceState(null, "", "#" + name); } catch(e){} }
+    if (name === "biens") updateCount();
   }
+  document.addEventListener("click", function(e){
+    var el = e.target.closest ? e.target.closest("[data-go]") : null;
+    if (el){ show(el.dataset.go); }
+  });
+  window.addEventListener("hashchange", function(){ show((location.hash || "").replace("#",""), false); });
+  var start = (location.hash || "").replace("#","");
+  show(VIEWS.indexOf(start) !== -1 ? start : "accueil", false);
 
-  var chips = document.querySelectorAll(".chip"), biens = document.querySelectorAll("#grid .bien");
+  /* ---------- biens : filtres + défilement horizontal ---------- */
+  var track = document.getElementById("track");
+  var chips = document.querySelectorAll(".chip");
+  var prev = document.getElementById("prev"), next = document.getElementById("next");
+  var count = document.getElementById("count");
+  var biens = Array.prototype.slice.call(track.querySelectorAll(".bien"));
+
+  function visibles(){ return biens.filter(function(b){ return !b.hidden; }); }
+  function step(){
+    var v = visibles()[0];
+    if (!v) return 300;
+    var gap = parseFloat(getComputedStyle(track).columnGap || "18") || 18;
+    return v.getBoundingClientRect().width + gap;
+  }
+  function updateCount(){
+    var list = visibles(), total = list.length;
+    if (!total){ count.textContent = "Aucun bien"; prev.disabled = next.disabled = true; return; }
+    var s = step();
+    var first = Math.round(track.scrollLeft / s) + 1;
+    var perView = Math.max(1, Math.round(track.clientWidth / s));
+    var last = Math.min(total, first + perView - 1);
+    count.textContent = first + (last > first ? "–" + last : "") + " sur " + total;
+    prev.disabled = track.scrollLeft < 4;
+    next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+  }
+  prev.addEventListener("click", function(){ track.scrollBy({left:-step()*1, behavior:"smooth"}); });
+  next.addEventListener("click", function(){ track.scrollBy({left: step()*1, behavior:"smooth"}); });
+  track.addEventListener("scroll", function(){ window.requestAnimationFrame(updateCount); }, {passive:true});
+  track.addEventListener("keydown", function(e){
+    if (e.key === "ArrowRight"){ e.preventDefault(); track.scrollBy({left:step(), behavior:"smooth"}); }
+    if (e.key === "ArrowLeft"){ e.preventDefault(); track.scrollBy({left:-step(), behavior:"smooth"}); }
+  });
+  window.addEventListener("resize", updateCount);
   Array.prototype.forEach.call(chips, function(chip){
     chip.addEventListener("click", function(){
       var f = chip.dataset.filter;
       Array.prototype.forEach.call(chips, function(c){ c.setAttribute("aria-pressed", c === chip ? "true" : "false"); });
-      Array.prototype.forEach.call(biens, function(b){
-        b.hidden = !(f === "all" || b.dataset.tags.split(" ").indexOf(f) !== -1);
-      });
+      biens.forEach(function(b){ b.hidden = !(f === "all" || b.dataset.tags.split(" ").indexOf(f) !== -1); });
+      track.scrollLeft = 0; updateCount();
     });
   });
+  updateCount();
 
+  /* ---------- « demander le dossier » -> estimation pré-remplie ---------- */
+  track.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".ask") : null;
+    if (!btn) return;
+    var ref = btn.closest(".bien").dataset.ref || "";
+    var msg = document.getElementById("message");
+    msg.value = "Je souhaite recevoir le dossier complet du bien suivant : " + ref + ".";
+    show("estimation");
+    setTimeout(function(){ document.getElementById("nom").focus(); }, 380);
+  });
+
+  /* ---------- copie ---------- */
   function copyText(text, btn, done){
     var restore = btn.textContent;
     var ok = function(){ btn.textContent = done; setTimeout(function(){ btn.textContent = restore; }, 2000); };
-    try {
-      navigator.clipboard.writeText(text).then(ok, function(){ selectFallback(text, btn, restore); });
-    } catch(e){ selectFallback(text, btn, restore); }
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var done2 = false;
+      try { done2 = document.execCommand("copy"); } catch(err){ done2 = false; }
+      document.body.removeChild(ta);
+      btn.textContent = done2 ? "Copié" : "Sélectionnez puis copiez";
+      setTimeout(function(){ btn.textContent = restore; }, 2500);
+    }
+    try { navigator.clipboard.writeText(text).then(ok, fallback); } catch(err){ fallback(); }
   }
-  function selectFallback(text, btn, restore){
-    var ta = document.createElement("textarea");
-    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select();
-    var ok = false;
-    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
-    document.body.removeChild(ta);
-    btn.textContent = ok ? "Copié" : "Sélectionnez puis copiez";
-    setTimeout(function(){ btn.textContent = restore; }, 2500);
-  }
-
   var copyMail = document.getElementById("copyMail");
   copyMail.addEventListener("click", function(){ copyText(DEST, copyMail, "Adresse copiée"); });
   var copyTel = document.getElementById("copyTel");
   copyTel.addEventListener("click", function(){ copyText("0683208350", copyTel, "Numéro copié"); });
 
+  /* ---------- formulaire : ouvre la messagerie, adressée à Émilie ---------- */
   var form = document.getElementById("estimForm");
-  var msg = document.getElementById("formMsg");
+  var formMsg = document.getElementById("formMsg");
   var result = document.getElementById("result");
   var resultText = document.getElementById("resultText");
-  var copyMsgBtn = document.getElementById("copyMsg");
   var mailtoLink = document.getElementById("mailtoLink");
+  var copyMsgBtn = document.getElementById("copyMsg");
 
   form.addEventListener("submit", function(e){
     e.preventDefault();
     var get = function(id){ return (document.getElementById(id).value || "").trim(); };
     var nom = get("nom"), email = get("email");
     if (!nom || email.indexOf("@") < 1){
-      msg.textContent = "Indiquez votre nom et un e-mail valide pour que je puisse vous répondre.";
-      result.hidden = true;
-      return;
+      formMsg.textContent = "Indiquez votre nom et un e-mail valide pour que je puisse vous répondre.";
+      result.hidden = true; return;
     }
-    msg.textContent = "";
+    formMsg.textContent = "";
     var body = [
       "Bonjour Émilie,", "",
       "Je souhaite obtenir une estimation de mon bien.", "",
@@ -821,17 +865,15 @@ footer{background:var(--paper-2);border-top:1px solid var(--line)}
       "Type de bien : " + document.getElementById("type").value,
       "Ville : " + (get("ville") || "—"),
       "Surface : " + (get("surface") ? get("surface") + " m²" : "—"),
-      "Nombre de pièces : " + (get("pieces") || "—"), "",
+      "Pièces : " + (get("pieces") || "—"), "",
       "Mon projet : " + (get("message") || "—"), "",
       "Merci par avance,", nom
     ].join("\n");
     resultText.textContent = body;
     mailtoLink.href = "mailto:" + DEST + "?subject=" + encodeURIComponent("Demande d'estimation — " + nom) + "&body=" + encodeURIComponent(body);
     result.hidden = false;
-    result.scrollIntoView({behavior:"smooth", block:"nearest"});
     try { window.location.href = mailtoLink.href; } catch(err){ /* la copie reste disponible */ }
   });
-
   copyMsgBtn.addEventListener("click", function(){ copyText(resultText.textContent, copyMsgBtn, "Message copié"); });
 })();
 </script>

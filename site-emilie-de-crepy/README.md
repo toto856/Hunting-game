@@ -4,10 +4,20 @@ Fichier unique, autonome : `index.html`. Aucune dépendance à installer.
 Ouvrez-le dans un navigateur, ou déposez-le tel quel sur un hébergeur
 (Netlify, Vercel, OVH, GitHub Pages…).
 
-## Structure de la page
-Accueil (hero) → chiffres clés → à propos → services → **9 biens** avec filtres →
-méthode en 4 étapes → formulaire d'estimation → avis client → **contact + e-mails
-en bas de page** + mentions légales.
+## Structure : six pages, aucun défilement vertical
+Le site est une application à vues : l'en-tête (logo + onglets) reste fixe, la zone
+en dessous change au clic. Chaque vue tient dans un écran.
+
+1. **Accueil** — titre, présentation, 4 boutons d'entrée, chiffres clés, illustration.
+2. **À propos** — citation, parcours, points forts, méthode en 4 étapes.
+3. **Services** — 6 prestations.
+4. **Mes biens** — filtres + carrousel horizontal des 9 biens (flèches ← →, compteur).
+   « Demander le dossier » bascule sur Estimation avec le bien déjà inscrit.
+5. **Estimation** — formulaire, ouvre la messagerie adressée à Émilie.
+6. **Contact** — e-mail, téléphone, adresse, profil iad, avis, zones, mentions légales.
+
+Chaque vue a son ancre (`#accueil`, `#biens`, `#contact`…) : un lien direct ouvre la
+bonne page.
 
 ## À VÉRIFIER avant mise en ligne
 | Élément | Valeur utilisée | Source / statut |
