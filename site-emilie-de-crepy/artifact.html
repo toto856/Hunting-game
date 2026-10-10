@@ -20,6 +20,8 @@
   --badge-cp-bg:#e8e3d7; --badge-cp-fg:#6b6453;
   --glow-a:rgba(95,112,100,.10); --glow-b:rgba(196,176,150,.16);
   --shadow:0 1px 2px rgba(43,42,39,.04), 0 10px 30px -18px rgba(43,42,39,.18);
+  --sv-sky:#e5eae2; --sv-far:#c2cdbd; --sv-mid:#d6dccf; --sv-wall:#f8f5ed;
+  --sv-roof:#98a391; --sv-win:#6d8270; --sv-fore:#b4bfae; --sv-water:#c3d3cd;
   --radius:18px; --maxw:1120px;
   --serif:"Cormorant Garamond",Garamond,Georgia,"Times New Roman",serif;
   --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -40,6 +42,8 @@
     --badge-bg:rgba(36,34,32,.92); --badge-fg:#c6c0b6; --badge-bd:rgba(236,231,223,.12);
     --badge-cp-bg:#3a342a; --badge-cp-fg:#ddd3c0;
     --glow-a:rgba(157,180,159,.09); --glow-b:rgba(196,176,150,.07);
+    --sv-sky:#212420; --sv-far:#2b2f28; --sv-mid:#262a23; --sv-wall:#38352f;
+    --sv-roof:#4a5046; --sv-win:#8ea391; --sv-fore:#2d312a; --sv-water:#2a332f;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px -20px rgba(0,0,0,.75);
     color-scheme:dark;
   }
@@ -59,6 +63,8 @@
   --badge-bg:rgba(36,34,32,.92); --badge-fg:#c6c0b6; --badge-bd:rgba(236,231,223,.12);
   --badge-cp-bg:#3a342a; --badge-cp-fg:#ddd3c0;
   --glow-a:rgba(157,180,159,.09); --glow-b:rgba(196,176,150,.07);
+  --sv-sky:#212420; --sv-far:#2b2f28; --sv-mid:#262a23; --sv-wall:#38352f;
+  --sv-roof:#4a5046; --sv-win:#8ea391; --sv-fore:#2d312a; --sv-water:#2a332f;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px -20px rgba(0,0,0,.75);
   color-scheme:dark;
 }
@@ -158,9 +164,10 @@ header.scrolled{border-bottom-color:var(--line)}
   display:flex;flex-direction:column;min-width:0;transition:transform .45s cubic-bezier(.2,.7,.3,1), box-shadow .45s ease}
 .bien:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
 .visual{position:relative;aspect-ratio:3/2;max-width:100%;display:grid;place-items:center}
-.visual svg{width:56px;height:56px;color:var(--vis-ic)}
+.visual .scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.vis-note{position:absolute;right:12px;bottom:11px;z-index:2;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:var(--badge-bg);color:var(--ink-mute);border:1px solid var(--badge-bd)}
 .v1{background:var(--vis-1)} .v2{background:var(--vis-2)} .v3{background:var(--vis-3)}
-.badges{position:absolute;top:14px;left:14px;display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.badges{position:absolute;top:14px;left:14px;z-index:2;display:flex;flex-direction:column;gap:7px;align-items:flex-start}
 .badge{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;padding:6px 12px;border-radius:999px;
   background:var(--badge-bg);color:var(--badge-fg);border:1px solid var(--badge-bd)}
 .badge.ex{background:var(--accent);color:var(--paper);border-color:transparent}
@@ -263,6 +270,133 @@ footer{background:var(--paper-2);border-top:1px solid var(--line)}
   <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5L17 13l4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 7.2 2 2 0 0 1 6 5z"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5 6.1 20.6l1.2-6.5L2.5 9.5l6.6-.9z"/></symbol>
+
+  <symbol id="s-domaine" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="34" cy="128" r="30" fill="var(--sv-far)"/><circle cx="68" cy="136" r="21" fill="var(--sv-far)"/>
+    <circle cx="262" cy="126" r="32" fill="var(--sv-far)"/><circle cx="228" cy="137" r="19" fill="var(--sv-far)"/>
+    <rect y="142" width="300" height="58" fill="var(--sv-mid)"/>
+    <rect x="74" y="94" width="152" height="48" fill="var(--sv-wall)"/>
+    <polygon points="68,94 150,66 232,94" fill="var(--sv-roof)"/>
+    <rect x="130" y="82" width="40" height="60" fill="var(--sv-wall)"/>
+    <polygon points="125,82 150,66 175,82" fill="var(--sv-roof)"/>
+    <rect x="98" y="58" width="7" height="15" fill="var(--sv-roof)"/><rect x="196" y="58" width="7" height="15" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="84" y="104" width="9" height="13"/><rect x="100" y="104" width="9" height="13"/><rect x="116" y="104" width="9" height="13"/>
+      <rect x="176" y="104" width="9" height="13"/><rect x="192" y="104" width="9" height="13"/><rect x="208" y="104" width="9" height="13"/>
+      <rect x="84" y="124" width="9" height="13"/><rect x="100" y="124" width="9" height="13"/><rect x="116" y="124" width="9" height="13"/>
+      <rect x="176" y="124" width="9" height="13"/><rect x="192" y="124" width="9" height="13"/><rect x="208" y="124" width="9" height="13"/>
+      <rect x="138" y="96" width="10" height="13"/><rect x="153" y="96" width="10" height="13"/>
+      <rect x="143" y="118" width="14" height="24" rx="7"/>
+    </g>
+    <rect x="92" y="162" width="116" height="26" rx="4" fill="var(--sv-water)"/>
+    <rect x="0" y="148" width="300" height="3" fill="var(--sv-fore)"/>
+  </symbol>
+
+  <symbol id="s-manoir" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="42" cy="124" r="26" fill="var(--sv-far)"/><circle cx="256" cy="128" r="24" fill="var(--sv-far)"/>
+    <rect y="146" width="300" height="54" fill="var(--sv-mid)"/>
+    <rect x="96" y="80" width="108" height="66" fill="var(--sv-wall)"/>
+    <polygon points="88,80 150,44 212,80" fill="var(--sv-roof)"/>
+    <polygon points="150,44 212,80 212,66" fill="var(--sv-roof)" opacity=".75"/>
+    <rect x="112" y="36" width="8" height="18" fill="var(--sv-roof)"/><rect x="180" y="36" width="8" height="18" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="108" y="90" width="12" height="17"/><rect x="128" y="90" width="12" height="17"/>
+      <rect x="160" y="90" width="12" height="17"/><rect x="180" y="90" width="12" height="17"/>
+      <rect x="108" y="116" width="12" height="17"/><rect x="180" y="116" width="12" height="17"/>
+      <rect x="138" y="112" width="24" height="34" rx="12"/>
+    </g>
+    <rect x="60" y="138" width="180" height="4" fill="var(--sv-fore)"/>
+    <rect x="0" y="158" width="300" height="6" fill="var(--sv-fore)" opacity=".55"/>
+  </symbol>
+
+  <symbol id="s-foret" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <g fill="var(--sv-far)">
+      <polygon points="24,140 44,86 64,140"/><polygon points="56,140 78,78 100,140"/><polygon points="204,140 226,82 248,140"/>
+      <polygon points="240,140 262,90 284,140"/><polygon points="0,140 18,98 36,140"/>
+    </g>
+    <rect y="140" width="300" height="60" fill="var(--sv-mid)"/>
+    <rect x="104" y="100" width="92" height="40" fill="var(--sv-wall)"/>
+    <polygon points="98,100 150,70 202,100" fill="var(--sv-roof)"/>
+    <rect x="126" y="62" width="7" height="14" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="114" y="110" width="11" height="15"/><rect x="133" y="110" width="11" height="15"/>
+      <rect x="156" y="110" width="11" height="15"/><rect x="175" y="110" width="11" height="15"/>
+      <rect x="144" y="120" width="12" height="20" rx="6"/>
+    </g>
+    <ellipse cx="150" cy="176" rx="96" ry="16" fill="var(--sv-water)"/>
+    <rect x="0" y="146" width="300" height="3" fill="var(--sv-fore)"/>
+  </symbol>
+
+  <symbol id="s-solognote" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="30" cy="130" r="24" fill="var(--sv-far)"/><circle cx="268" cy="132" r="26" fill="var(--sv-far)"/>
+    <circle cx="242" cy="140" r="16" fill="var(--sv-far)"/>
+    <rect y="144" width="300" height="56" fill="var(--sv-mid)"/>
+    <rect x="62" y="104" width="176" height="40" fill="var(--sv-wall)"/>
+    <polygon points="54,104 150,64 246,104" fill="var(--sv-roof)"/>
+    <rect x="96" y="72" width="7" height="16" fill="var(--sv-roof)"/><rect x="198" y="72" width="7" height="16" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="74" y="114" width="12" height="16"/><rect x="96" y="114" width="12" height="16"/>
+      <rect x="194" y="114" width="12" height="16"/><rect x="216" y="114" width="12" height="16"/>
+      <rect x="128" y="112" width="18" height="32" rx="9"/><rect x="156" y="114" width="12" height="16"/>
+    </g>
+    <rect x="0" y="152" width="300" height="4" fill="var(--sv-fore)"/>
+    <rect x="34" y="162" width="232" height="22" rx="3" fill="var(--sv-water)" opacity=".75"/>
+  </symbol>
+
+  <symbol id="s-maison" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="48" cy="126" r="24" fill="var(--sv-far)"/><circle cx="252" cy="130" r="22" fill="var(--sv-far)"/>
+    <rect y="144" width="300" height="56" fill="var(--sv-mid)"/>
+    <rect x="98" y="94" width="104" height="50" fill="var(--sv-wall)"/>
+    <polygon points="90,94 150,58 210,94" fill="var(--sv-roof)"/>
+    <rect x="172" y="66" width="7" height="14" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="110" y="104" width="13" height="17"/><rect x="134" y="104" width="13" height="17"/><rect x="176" y="104" width="13" height="17"/>
+      <rect x="110" y="128" width="13" height="16"/><rect x="176" y="128" width="13" height="16"/>
+      <rect x="141" y="120" width="18" height="24" rx="9"/>
+    </g>
+    <rect x="212" y="120" width="40" height="24" fill="var(--sv-wall)" opacity=".8"/>
+    <polygon points="208,120 232,108 256,120" fill="var(--sv-roof)" opacity=".8"/>
+    <rect x="0" y="152" width="300" height="4" fill="var(--sv-fore)"/>
+  </symbol>
+
+  <symbol id="s-contemporaine" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="36" cy="128" r="22" fill="var(--sv-far)"/><circle cx="266" cy="124" r="26" fill="var(--sv-far)"/>
+    <rect y="146" width="300" height="54" fill="var(--sv-mid)"/>
+    <rect x="70" y="96" width="92" height="50" fill="var(--sv-wall)"/>
+    <rect x="156" y="74" width="80" height="72" fill="var(--sv-wall)"/>
+    <rect x="64" y="92" width="104" height="6" fill="var(--sv-roof)"/>
+    <rect x="150" y="70" width="92" height="6" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="80" y="106" width="34" height="30"/><rect x="122" y="106" width="30" height="30"/>
+      <rect x="166" y="84" width="60" height="22"/><rect x="166" y="114" width="26" height="24"/>
+      <rect x="200" y="114" width="26" height="24"/>
+    </g>
+    <rect x="52" y="146" width="200" height="5" fill="var(--sv-fore)"/>
+    <rect x="86" y="158" width="128" height="20" rx="3" fill="var(--sv-water)"/>
+  </symbol>
+
+  <symbol id="s-immeuble" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <rect x="18" y="52" width="88" height="148" fill="var(--sv-far)"/>
+    <rect x="196" y="66" width="86" height="134" fill="var(--sv-far)"/>
+    <rect x="96" y="30" width="108" height="170" fill="var(--sv-wall)"/>
+    <rect x="90" y="24" width="120" height="8" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="108" y="46" width="18" height="24"/><rect x="139" y="46" width="18" height="24"/><rect x="170" y="46" width="18" height="24"/>
+      <rect x="108" y="86" width="18" height="24"/><rect x="139" y="86" width="18" height="24"/><rect x="170" y="86" width="18" height="24"/>
+      <rect x="108" y="126" width="18" height="24"/><rect x="139" y="126" width="18" height="24"/><rect x="170" y="126" width="18" height="24"/>
+      <rect x="139" y="166" width="22" height="34" rx="2"/>
+    </g>
+    <g fill="var(--sv-roof)">
+      <rect x="104" y="72" width="96" height="3"/><rect x="104" y="112" width="96" height="3"/><rect x="104" y="152" width="96" height="3"/>
+    </g>
+  </symbol>
 </svg>
 
 <header id="top">
@@ -397,55 +531,55 @@ footer{background:var(--paper-2);border-top:1px solid var(--line)}
 
     <div class="grid-biens" id="grid">
       <article class="bien rv" data-tags="prestige maison exclusivite">
-        <div class="visual v1"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div><svg><use href="#i-estate"/></svg></div>
+        <div class="visual v1"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-domaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
         <div class="body"><span class="city">Olivet (45160)</span><h3>Domaine de caractère de 1870</h3>
           <div class="specs"><span>313 m²</span><span>11 pièces</span><span>6 chambres</span><span>4 salles de bain</span><span>Terrain 13 392 m²</span><span>Piscine</span></div>
           <div class="price"><b>1 650 000 €</b><a href="#contact">Demander le dossier</a></div></div>
       </article>
       <article class="bien rv" data-tags="prestige maison">
-        <div class="visual v2"><div class="badges"><span class="badge">Prestige</span></div><svg><use href="#i-house"/></svg></div>
+        <div class="visual v2"><div class="badges"><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
         <div class="body"><span class="city">Bullion (78830)</span><h3>Vaste propriété en vallée de Chevreuse</h3>
           <div class="specs"><span>480 m²</span><span>Maison</span><span>Yvelines</span></div>
           <div class="price"><b>1 290 000 €</b><a href="#contact">Demander le dossier</a></div></div>
       </article>
       <article class="bien rv" data-tags="prestige maison exclusivite">
-        <div class="visual v3"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div><svg><use href="#i-estate"/></svg></div>
+        <div class="visual v3"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-foret" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
         <div class="body"><span class="city">Lamotte-Beuvron (41600)</span><h3>Domaine de 60 hectares au cœur de la Sologne</h3>
           <div class="specs"><span>280 m²</span><span>10 pièces</span><span>8 chambres</span><span>Terrain 60 ha</span></div>
           <div class="price"><b>1 166 000 €</b><a href="#contact">Demander le dossier</a></div></div>
       </article>
       <article class="bien rv" data-tags="prestige maison">
-        <div class="visual v2"><div class="badges"><span class="badge">Prestige</span></div><svg><use href="#i-house"/></svg></div>
+        <div class="visual v2"><div class="badges"><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
         <div class="body"><span class="city">Saint-Jean-le-Blanc (45650)</span><h3>Grande demeure aux portes d'Orléans</h3>
           <div class="specs"><span>490 m²</span><span>Maison</span><span>Loiret</span></div>
           <div class="price"><b>995 000 €</b><a href="#contact">Demander le dossier</a></div></div>
       </article>
       <article class="bien rv" data-tags="prestige maison exclusivite">
-        <div class="visual v1"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge cp">Sous compromis</span></div><svg><use href="#i-house"/></svg></div>
+        <div class="visual v1"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge cp">Sous compromis</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-solognote" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
         <div class="body"><span class="city">Saint-Viâtre (41210)</span><h3>Maison solognote de 310 m²</h3>
           <div class="specs"><span>310 m²</span><span>Maison</span><span>Sologne</span></div>
           <div class="price"><b>627 000 €</b><a href="#contact">Demander le dossier</a></div></div>
       </article>
       <article class="bien rv" data-tags="prestige maison">
-        <div class="visual v3"><div class="badges"><span class="badge">Prestige</span></div><svg><use href="#i-house"/></svg></div>
+        <div class="visual v3"><div class="badges"><span class="badge">Prestige</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-maison" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
         <div class="body"><span class="city">Olivet (45160)</span><h3>Maison familiale au bord du Loiret</h3>
           <div class="specs"><span>184 m²</span><span>Maison</span><span>Olivet</span></div>
           <div class="price"><b>570 000 €</b><a href="#contact">Demander le dossier</a></div></div>
       </article>
       <article class="bien rv" data-tags="maison exclusivite">
-        <div class="visual v1"><div class="badges"><span class="badge ex">Exclusivité</span></div><svg><use href="#i-house"/></svg></div>
+        <div class="visual v1"><div class="badges"><span class="badge ex">Exclusivité</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-contemporaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
         <div class="body"><span class="city">Saint-Cyr-en-Val (45590)</span><h3>Maison contemporaine de 178 m²</h3>
           <div class="specs"><span>178 m²</span><span>Maison</span><span>Loiret</span></div>
           <div class="price"><b>495 000 €</b><a href="#contact">Demander le dossier</a></div></div>
       </article>
       <article class="bien rv" data-tags="appartement">
-        <div class="visual v3"><div class="badges"><span class="badge">Appartement</span></div><svg><use href="#i-flat"/></svg></div>
+        <div class="visual v3"><div class="badges"><span class="badge">Appartement</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
         <div class="body"><span class="city">Orléans (45000)</span><h3>Deux-pièces en cœur de ville</h3>
           <div class="specs"><span>41 m²</span><span>2 pièces</span><span>1 chambre</span></div>
           <div class="price"><b>118 000 €</b><a href="#contact">Demander le dossier</a></div></div>
       </article>
       <article class="bien rv" data-tags="appartement">
-        <div class="visual v2"><div class="badges"><span class="badge">Appartement</span></div><svg><use href="#i-flat"/></svg></div>
+        <div class="visual v2"><div class="badges"><span class="badge">Appartement</span></div><svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
         <div class="body"><span class="city">Olivet (45160)</span><h3>Trois-pièces lumineux</h3>
           <div class="specs"><span>58 m²</span><span>3 pièces</span><span>2 chambres</span></div>
           <div class="price"><b>99 700 €</b><a href="#contact">Demander le dossier</a></div></div>
@@ -508,18 +642,18 @@ footer{background:var(--paper-2);border-top:1px solid var(--line)}
       </div>
       <div class="field"><label for="message">Votre projet (optionnel)</label><textarea id="message" name="message" placeholder="Quelques mots sur votre bien, votre calendrier…"></textarea></div>
       <div class="form-foot">
-        <button class="btn" type="submit">Composer ma demande</button>
-        <small>Vos informations restent dans votre navigateur&nbsp;: rien n'est envoyé automatiquement.</small>
+        <button class="btn" type="submit">Envoyer ma demande</button>
+        <small>Votre messagerie s'ouvre avec la demande déjà rédigée, adressée à Émilie.</small>
       </div>
       <p id="formMsg" style="margin:14px 0 0;font-size:.86rem;color:var(--ink-mute)" role="status" aria-live="polite"></p>
 
       <div class="result" id="result" hidden>
-        <h3>Votre demande est prête</h3>
-        <p>Copiez ce message et envoyez-le à <span class="addr" id="destAddr">emilie.de-crepy@iadfrance.fr</span></p>
+        <h3>Votre demande part par e-mail</h3>
+        <p>Votre messagerie s'ouvre, adressée à <span class="addr" id="destAddr">emilie.de-crepy@iadfrance.fr</span>. Si rien ne s'ouvre, copiez le message ci-dessous et envoyez-le à cette adresse.</p>
         <pre id="resultText"></pre>
         <div class="result-foot">
           <button type="button" class="btn small" id="copyMsg">Copier le message</button>
-          <a class="btn small ghost" id="mailtoLink" href="#">Ouvrir ma messagerie</a>
+          <a class="btn small ghost" id="mailtoLink" href="#">Rouvrir ma messagerie</a>
           <small style="font-size:.76rem;color:var(--ink-mute)">Si votre messagerie ne s'ouvre pas, utilisez la copie.</small>
         </div>
       </div>
@@ -695,6 +829,7 @@ footer{background:var(--paper-2);border-top:1px solid var(--line)}
     mailtoLink.href = "mailto:" + DEST + "?subject=" + encodeURIComponent("Demande d'estimation — " + nom) + "&body=" + encodeURIComponent(body);
     result.hidden = false;
     result.scrollIntoView({behavior:"smooth", block:"nearest"});
+    try { window.location.href = mailtoLink.href; } catch(err){ /* la copie reste disponible */ }
   });
 
   copyMsgBtn.addEventListener("click", function(){ copyText(resultText.textContent, copyMsgBtn, "Message copié"); });

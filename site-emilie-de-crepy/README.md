@@ -18,7 +18,7 @@ en bas de page** + mentions légales.
 | RSAC / SIREN | 991 481 615 | Registre des entreprises + mentions des annonces. |
 | Les 9 biens | prix, surfaces, villes | Profil iad (instantané indexé) — à revérifier, les prix bougent. |
 | Avis | 5/5 (1 avis) | Annuaire iad. Le texte du témoignage est une formulation générique, à remplacer par le vrai avis. |
-| Photos | aucune | Visuels typographiques en attendant les vraies photos des biens et le portrait. |
+| Photos | **aucune photo réelle** | Illustrations SVG dessinées (7 scènes), marquées « Illustration » sur chaque vignette. Le réseau de la session bloque tout téléchargement d'images, et les photos des annonces appartiennent à iad / au photographe. À remplacer par les vraies photos. |
 
 L'e-mail apparaît à **3 endroits** dans `index.html` : les deux liens `mailto:`
 du bloc contact et la constante `var DEST = "..."` dans le script du formulaire.
@@ -29,12 +29,16 @@ Un simple rechercher/remplacer de `emilie.de-crepy@iadfrance.fr` suffit.
   `--paper` (fond), `--ink` (texte).
 - **Ajouter un bien** : dupliquer un bloc `<article class="bien" data-tags="...">`.
   Tags disponibles : `prestige`, `maison`, `appartement`, `exclusivite`.
-- **Photos** : remplacer le `<div class="visual" …>` par
-  `<div class="visual"><img src="photos/mon-bien.jpg" alt="…"></div>`.
+- **Photos** : dans chaque carte, remplacer le bloc
+  `<svg class="scene" …>…</svg><span class="vis-note">Illustration</span>` par
+  `<img src="photos/mon-bien.jpg" alt="…" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`.
+  Les illustrations sont définies une seule fois dans le sprite SVG (`#s-domaine`, `#s-manoir`,
+  `#s-foret`, `#s-solognote`, `#s-maison`, `#s-contemporaine`, `#s-immeuble`).
 
-Le formulaire d'estimation ouvre la messagerie du visiteur avec un message
-pré-rempli (aucun serveur requis). Pour un envoi direct, le brancher sur
-Formspree / Netlify Forms.
+Le formulaire d'estimation ouvre directement la messagerie du visiteur, adressée à
+l'e-mail du site, avec la demande déjà rédigée — aucun serveur requis. Pour que les
+demandes arrivent dans la boîte d'Émilie **sans passer par la messagerie du visiteur**,
+brancher le `<form>` sur Formspree ou Netlify Forms (endpoint gratuit, 2 lignes à changer).
 
 ## Deux fichiers
 - `index.html` — version autonome, à ouvrir en local ou à héberger (doctype + head complets).

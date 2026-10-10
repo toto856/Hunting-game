@@ -20,6 +20,8 @@
   --line:#e6e1d8;
   --accent:#5f7064;
   --accent-soft:#eaeeea;
+  --sv-sky:#e5eae2; --sv-far:#c2cdbd; --sv-mid:#d6dccf; --sv-wall:#f8f5ed;
+  --sv-roof:#98a391; --sv-win:#6d8270; --sv-fore:#b4bfae; --sv-water:#c3d3cd;
   --radius:18px;
   --maxw:1120px;
   --shadow:0 1px 2px rgba(43,42,39,.04), 0 10px 30px -18px rgba(43,42,39,.18);
@@ -158,7 +160,8 @@ header.scrolled{border-bottom-color:var(--line)}
 .bien:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
 .bien.hide{display:none}
 .bien .visual{position:relative;aspect-ratio:3/2;display:grid;place-items:center;overflow:hidden}
-.bien .visual svg{position:absolute;inset:0;width:100%;height:100%}
+.bien .visual svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.vis-note{position:absolute;right:12px;bottom:11px;z-index:2;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.92);color:var(--ink-mute);border:1px solid rgba(43,42,39,.07)}
 .bien .visual .kind{
   position:relative;font-family:var(--serif);font-size:1rem;letter-spacing:.3em;text-transform:uppercase;
   color:rgba(43,42,39,.42)
@@ -298,6 +301,133 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
   </symbol>
   <symbol id="i-star" viewBox="0 0 24 24" fill="currentColor">
     <path d="m12 2.6 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5 6.1 20.6l1.2-6.5L2.5 9.5l6.6-.9z"/>
+  </symbol>
+
+  <symbol id="s-domaine" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="34" cy="128" r="30" fill="var(--sv-far)"/><circle cx="68" cy="136" r="21" fill="var(--sv-far)"/>
+    <circle cx="262" cy="126" r="32" fill="var(--sv-far)"/><circle cx="228" cy="137" r="19" fill="var(--sv-far)"/>
+    <rect y="142" width="300" height="58" fill="var(--sv-mid)"/>
+    <rect x="74" y="94" width="152" height="48" fill="var(--sv-wall)"/>
+    <polygon points="68,94 150,66 232,94" fill="var(--sv-roof)"/>
+    <rect x="130" y="82" width="40" height="60" fill="var(--sv-wall)"/>
+    <polygon points="125,82 150,66 175,82" fill="var(--sv-roof)"/>
+    <rect x="98" y="58" width="7" height="15" fill="var(--sv-roof)"/><rect x="196" y="58" width="7" height="15" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="84" y="104" width="9" height="13"/><rect x="100" y="104" width="9" height="13"/><rect x="116" y="104" width="9" height="13"/>
+      <rect x="176" y="104" width="9" height="13"/><rect x="192" y="104" width="9" height="13"/><rect x="208" y="104" width="9" height="13"/>
+      <rect x="84" y="124" width="9" height="13"/><rect x="100" y="124" width="9" height="13"/><rect x="116" y="124" width="9" height="13"/>
+      <rect x="176" y="124" width="9" height="13"/><rect x="192" y="124" width="9" height="13"/><rect x="208" y="124" width="9" height="13"/>
+      <rect x="138" y="96" width="10" height="13"/><rect x="153" y="96" width="10" height="13"/>
+      <rect x="143" y="118" width="14" height="24" rx="7"/>
+    </g>
+    <rect x="92" y="162" width="116" height="26" rx="4" fill="var(--sv-water)"/>
+    <rect x="0" y="148" width="300" height="3" fill="var(--sv-fore)"/>
+  </symbol>
+
+  <symbol id="s-manoir" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="42" cy="124" r="26" fill="var(--sv-far)"/><circle cx="256" cy="128" r="24" fill="var(--sv-far)"/>
+    <rect y="146" width="300" height="54" fill="var(--sv-mid)"/>
+    <rect x="96" y="80" width="108" height="66" fill="var(--sv-wall)"/>
+    <polygon points="88,80 150,44 212,80" fill="var(--sv-roof)"/>
+    <polygon points="150,44 212,80 212,66" fill="var(--sv-roof)" opacity=".75"/>
+    <rect x="112" y="36" width="8" height="18" fill="var(--sv-roof)"/><rect x="180" y="36" width="8" height="18" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="108" y="90" width="12" height="17"/><rect x="128" y="90" width="12" height="17"/>
+      <rect x="160" y="90" width="12" height="17"/><rect x="180" y="90" width="12" height="17"/>
+      <rect x="108" y="116" width="12" height="17"/><rect x="180" y="116" width="12" height="17"/>
+      <rect x="138" y="112" width="24" height="34" rx="12"/>
+    </g>
+    <rect x="60" y="138" width="180" height="4" fill="var(--sv-fore)"/>
+    <rect x="0" y="158" width="300" height="6" fill="var(--sv-fore)" opacity=".55"/>
+  </symbol>
+
+  <symbol id="s-foret" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <g fill="var(--sv-far)">
+      <polygon points="24,140 44,86 64,140"/><polygon points="56,140 78,78 100,140"/><polygon points="204,140 226,82 248,140"/>
+      <polygon points="240,140 262,90 284,140"/><polygon points="0,140 18,98 36,140"/>
+    </g>
+    <rect y="140" width="300" height="60" fill="var(--sv-mid)"/>
+    <rect x="104" y="100" width="92" height="40" fill="var(--sv-wall)"/>
+    <polygon points="98,100 150,70 202,100" fill="var(--sv-roof)"/>
+    <rect x="126" y="62" width="7" height="14" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="114" y="110" width="11" height="15"/><rect x="133" y="110" width="11" height="15"/>
+      <rect x="156" y="110" width="11" height="15"/><rect x="175" y="110" width="11" height="15"/>
+      <rect x="144" y="120" width="12" height="20" rx="6"/>
+    </g>
+    <ellipse cx="150" cy="176" rx="96" ry="16" fill="var(--sv-water)"/>
+    <rect x="0" y="146" width="300" height="3" fill="var(--sv-fore)"/>
+  </symbol>
+
+  <symbol id="s-solognote" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="30" cy="130" r="24" fill="var(--sv-far)"/><circle cx="268" cy="132" r="26" fill="var(--sv-far)"/>
+    <circle cx="242" cy="140" r="16" fill="var(--sv-far)"/>
+    <rect y="144" width="300" height="56" fill="var(--sv-mid)"/>
+    <rect x="62" y="104" width="176" height="40" fill="var(--sv-wall)"/>
+    <polygon points="54,104 150,64 246,104" fill="var(--sv-roof)"/>
+    <rect x="96" y="72" width="7" height="16" fill="var(--sv-roof)"/><rect x="198" y="72" width="7" height="16" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="74" y="114" width="12" height="16"/><rect x="96" y="114" width="12" height="16"/>
+      <rect x="194" y="114" width="12" height="16"/><rect x="216" y="114" width="12" height="16"/>
+      <rect x="128" y="112" width="18" height="32" rx="9"/><rect x="156" y="114" width="12" height="16"/>
+    </g>
+    <rect x="0" y="152" width="300" height="4" fill="var(--sv-fore)"/>
+    <rect x="34" y="162" width="232" height="22" rx="3" fill="var(--sv-water)" opacity=".75"/>
+  </symbol>
+
+  <symbol id="s-maison" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="48" cy="126" r="24" fill="var(--sv-far)"/><circle cx="252" cy="130" r="22" fill="var(--sv-far)"/>
+    <rect y="144" width="300" height="56" fill="var(--sv-mid)"/>
+    <rect x="98" y="94" width="104" height="50" fill="var(--sv-wall)"/>
+    <polygon points="90,94 150,58 210,94" fill="var(--sv-roof)"/>
+    <rect x="172" y="66" width="7" height="14" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="110" y="104" width="13" height="17"/><rect x="134" y="104" width="13" height="17"/><rect x="176" y="104" width="13" height="17"/>
+      <rect x="110" y="128" width="13" height="16"/><rect x="176" y="128" width="13" height="16"/>
+      <rect x="141" y="120" width="18" height="24" rx="9"/>
+    </g>
+    <rect x="212" y="120" width="40" height="24" fill="var(--sv-wall)" opacity=".8"/>
+    <polygon points="208,120 232,108 256,120" fill="var(--sv-roof)" opacity=".8"/>
+    <rect x="0" y="152" width="300" height="4" fill="var(--sv-fore)"/>
+  </symbol>
+
+  <symbol id="s-contemporaine" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <circle cx="36" cy="128" r="22" fill="var(--sv-far)"/><circle cx="266" cy="124" r="26" fill="var(--sv-far)"/>
+    <rect y="146" width="300" height="54" fill="var(--sv-mid)"/>
+    <rect x="70" y="96" width="92" height="50" fill="var(--sv-wall)"/>
+    <rect x="156" y="74" width="80" height="72" fill="var(--sv-wall)"/>
+    <rect x="64" y="92" width="104" height="6" fill="var(--sv-roof)"/>
+    <rect x="150" y="70" width="92" height="6" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="80" y="106" width="34" height="30"/><rect x="122" y="106" width="30" height="30"/>
+      <rect x="166" y="84" width="60" height="22"/><rect x="166" y="114" width="26" height="24"/>
+      <rect x="200" y="114" width="26" height="24"/>
+    </g>
+    <rect x="52" y="146" width="200" height="5" fill="var(--sv-fore)"/>
+    <rect x="86" y="158" width="128" height="20" rx="3" fill="var(--sv-water)"/>
+  </symbol>
+
+  <symbol id="s-immeuble" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="200" fill="var(--sv-sky)"/>
+    <rect x="18" y="52" width="88" height="148" fill="var(--sv-far)"/>
+    <rect x="196" y="66" width="86" height="134" fill="var(--sv-far)"/>
+    <rect x="96" y="30" width="108" height="170" fill="var(--sv-wall)"/>
+    <rect x="90" y="24" width="120" height="8" fill="var(--sv-roof)"/>
+    <g fill="var(--sv-win)">
+      <rect x="108" y="46" width="18" height="24"/><rect x="139" y="46" width="18" height="24"/><rect x="170" y="46" width="18" height="24"/>
+      <rect x="108" y="86" width="18" height="24"/><rect x="139" y="86" width="18" height="24"/><rect x="170" y="86" width="18" height="24"/>
+      <rect x="108" y="126" width="18" height="24"/><rect x="139" y="126" width="18" height="24"/><rect x="170" y="126" width="18" height="24"/>
+      <rect x="139" y="166" width="22" height="34" rx="2"/>
+    </g>
+    <g fill="var(--sv-roof)">
+      <rect x="104" y="72" width="96" height="3"/><rect x="104" y="112" width="96" height="3"/><rect x="104" y="152" width="96" height="3"/>
+    </g>
   </symbol>
 </svg>
 
@@ -461,7 +591,7 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
       <article class="bien rv" data-tags="prestige maison exclusivite">
         <div class="visual" style="background:linear-gradient(150deg,#eef1ed,#f3ece1)">
           <div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div>
-          <svg width="58" height="58" style="position:relative;inset:auto;width:58px;height:58px;color:rgba(43,42,39,.26)"><use href="#i-estate"/></svg>
+          <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-domaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span>
         </div>
         <div class="body">
           <span class="city">Olivet (45160)</span>
@@ -477,7 +607,7 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
       <article class="bien rv" data-tags="prestige maison">
         <div class="visual" style="background:linear-gradient(150deg,#f1eee7,#e9eeea)">
           <div class="badges"><span class="badge">Prestige</span></div>
-          <svg width="58" height="58" style="position:relative;width:58px;height:58px;color:rgba(43,42,39,.26)"><use href="#i-house"/></svg>
+          <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span>
         </div>
         <div class="body">
           <span class="city">Bullion (78830)</span>
@@ -490,7 +620,7 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
       <article class="bien rv" data-tags="prestige maison exclusivite">
         <div class="visual" style="background:linear-gradient(150deg,#eceee9,#f4efe6)">
           <div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div>
-          <svg width="58" height="58" style="position:relative;width:58px;height:58px;color:rgba(43,42,39,.26)"><use href="#i-estate"/></svg>
+          <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-foret" width="300" height="200"/></svg><span class="vis-note">Illustration</span>
         </div>
         <div class="body">
           <span class="city">Lamotte-Beuvron (41600)</span>
@@ -503,7 +633,7 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
       <article class="bien rv" data-tags="prestige maison">
         <div class="visual" style="background:linear-gradient(150deg,#f0f2ee,#eae5db)">
           <div class="badges"><span class="badge">Prestige</span></div>
-          <svg width="58" height="58" style="position:relative;width:58px;height:58px;color:rgba(43,42,39,.26)"><use href="#i-house"/></svg>
+          <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span>
         </div>
         <div class="body">
           <span class="city">Saint-Jean-le-Blanc (45650)</span>
@@ -516,7 +646,7 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
       <article class="bien rv" data-tags="prestige maison exclusivite">
         <div class="visual" style="background:linear-gradient(150deg,#eef0ec,#f2ece3)">
           <div class="badges"><span class="badge ex">Exclusivité</span><span class="badge cp">Sous compromis</span></div>
-          <svg width="58" height="58" style="position:relative;width:58px;height:58px;color:rgba(43,42,39,.26)"><use href="#i-house"/></svg>
+          <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-solognote" width="300" height="200"/></svg><span class="vis-note">Illustration</span>
         </div>
         <div class="body">
           <span class="city">Saint-Viâtre (41210)</span>
@@ -529,7 +659,7 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
       <article class="bien rv" data-tags="prestige maison">
         <div class="visual" style="background:linear-gradient(150deg,#f1efe9,#e8ece8)">
           <div class="badges"><span class="badge">Prestige</span></div>
-          <svg width="58" height="58" style="position:relative;width:58px;height:58px;color:rgba(43,42,39,.26)"><use href="#i-house"/></svg>
+          <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-maison" width="300" height="200"/></svg><span class="vis-note">Illustration</span>
         </div>
         <div class="body">
           <span class="city">Olivet (45160)</span>
@@ -542,7 +672,7 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
       <article class="bien rv" data-tags="maison exclusivite">
         <div class="visual" style="background:linear-gradient(150deg,#eff1ed,#f3eee6)">
           <div class="badges"><span class="badge ex">Exclusivité</span></div>
-          <svg width="58" height="58" style="position:relative;width:58px;height:58px;color:rgba(43,42,39,.26)"><use href="#i-house"/></svg>
+          <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-contemporaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span>
         </div>
         <div class="body">
           <span class="city">Saint-Cyr-en-Val (45590)</span>
@@ -555,7 +685,7 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
       <article class="bien rv" data-tags="appartement">
         <div class="visual" style="background:linear-gradient(150deg,#edf0ec,#f1ece4)">
           <div class="badges"><span class="badge">Appartement</span></div>
-          <svg width="58" height="58" style="position:relative;width:58px;height:58px;color:rgba(43,42,39,.26)"><use href="#i-flat"/></svg>
+          <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span>
         </div>
         <div class="body">
           <span class="city">Orléans (45000)</span>
@@ -568,7 +698,7 @@ footer{background:#24262330;background:linear-gradient(var(--paper-2),var(--pape
       <article class="bien rv" data-tags="appartement">
         <div class="visual" style="background:linear-gradient(150deg,#eff1ec,#efeae1)">
           <div class="badges"><span class="badge">Appartement</span></div>
-          <svg width="58" height="58" style="position:relative;width:58px;height:58px;color:rgba(43,42,39,.26)"><use href="#i-flat"/></svg>
+          <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration du bien"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span>
         </div>
         <div class="body">
           <span class="city">Olivet (45160)</span>
