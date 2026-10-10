@@ -59,6 +59,14 @@ class App {
   async start() {
     const test = this.params.get('test');
     if (this.params.get('demo') === 'trophees') (await import('./dev/demo.js')).fillDemo();
+    if (test === 'mount') {
+      const { TestMountScene } = await import('./world/testMount.js');
+      const s = new TestMountScene(this.engine, this.texgen, this.params);
+      await s.load(progress);
+      this.engine.setScene(s);
+      this.engine.start(Number(this.params.get('still') || 0));
+      return this.ready();
+    }
     if (test === 'animals') {
       const s = new TestAnimalsScene(this.engine, this.texgen, this.params);
       await s.load(progress);

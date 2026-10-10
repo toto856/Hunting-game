@@ -47,7 +47,7 @@ export class TestAnimalsScene {
         };
         ind.trophy = makeTrophy(sp, 12345 + i * 7, Number(this.params.get('tq') || 0.8), 0.8, this.params.get('leg') === '1');
         let v;
-        try { v = this.factory.create(ind); } catch (e) { console.error('create ' + sp + ' ' + sex + ': ' + e.stack); throw e; }
+        try { v = this.factory.create(ind, { detail: true, fur: this.params.get('fur') !== '0' }); } catch (e) { console.error('create ' + sp + ' ' + sex + ': ' + e.stack); throw e; }
         log('create ' + sp + ' ' + sex);
         v.holder.position.set(x, 0, sex === 'm' ? 0 : -2.6);
         v.holder.rotation.y = Number(this.params.get('ry') || -Math.PI / 2);

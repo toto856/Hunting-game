@@ -2,13 +2,16 @@
 // sa position sur le corps). Couleur sRGB + rugosité (alpha). Variantes rares incluses.
 import * as THREE from 'three';
 import { GLSL_NOISE } from '../gfx/globals.js';
+import { SPECIES } from './species.js';
 
 const COMMON = /* glsl */ `
 ${GLSL_NOISE}
 varying vec3 vP; varying vec3 vN; varying float vReg; varying vec2 vUv; varying vec2 vUv1;
-uniform vec3 uBase; uniform float uSex; uniform float uFur; uniform float uScale; uniform float uSeed;
+uniform vec3 uBase; uniform float uSex; uniform float uFur; uniform float uScale; uniform float uSeed; uniform float uHeadZ;
 float sstep( float a, float b, float x ) { return smoothstep( a, b, x ); }
 float topK() { return clamp( vN.y * 0.5 + 0.5, 0.0, 1.0 ); }
+// Passage progressif du cou à la tête (pas de collerette)
+float headK() { return smoothstep( uHeadZ - 0.07, uHeadZ + 0.05, vP.z ) * step( vReg, 2.5 ); }
 float fbmS( vec3 p ) { return fbm2( p.xz * 7.0 + p.y * 3.0 + uSeed ); }
 // Taches pie (grandes plages blanches)
 float pie( vec3 p ) { return smoothstep( 0.52, 0.56, fbm2( p.zy * 3.2 + vec2( p.x * 2.0, 0.0 ) + uSeed * 3.0 ) ); }
@@ -27,13 +30,13 @@ vec4 coat() {
   c = mix( c, c * vec3( 0.72, 0.7, 0.68 ), sstep( 0.6, 0.95, bot ) * step( vReg, 0.5 ) );
   // Cou et crinière du cerf : brun sombre, fondu progressif vers les épaules
   {
-    float neckK = sstep( 0.5, 0.78, p.z ) * ( 1.0 - sstep( 0.98, 1.06, p.z ) );
+    float neckK = sstep( 0.5, 0.78, p.z ) * ( 1.0 - sstep( uHeadZ - 0.06, uHeadZ + 0.06, p.z ) );
     float mane = uSex * ( 0.5 + 0.5 * bot ) * neckK;
     c = mix( c, vec3( 0.2, 0.14, 0.095 ) * ( 0.9 + 0.2 * n ), mane * 0.8 );
   }
   // Tête : grise, museau clair, nez noir
-  if ( vReg > 1.5 && vReg < 2.5 ) {
-    c = mix( c, vec3( 0.44, 0.38, 0.32 ), 0.55 );
+  if ( vReg < 2.5 && vP.z > uHeadZ - 0.08 ) {
+    c = mix( c, vec3( 0.44, 0.38, 0.32 ), 0.55 * headK() );
     float muzzle = sstep( 1.3, 1.42, p.z );
     c = mix( c, vec3( 0.62, 0.57, 0.5 ), muzzle * sstep( 0.4, 0.9, bot ) );
     float nose = sstep( 1.415, 1.445, p.z ) * sstep( 0.3, 0.6, top + 0.2 );
@@ -63,8 +66,8 @@ vec4 coat() {
   c *= 0.93 + 0.14 * n;
   c *= 1.0 - 0.1 * sstep( 0.7, 1.0, top );
   c = mix( c, c * 1.18 + 0.04, sstep( 0.7, 0.95, bot ) * step( vReg, 1.5 ) );
-  if ( vReg > 1.5 && vReg < 2.5 ) {
-    c = mix( c, uBase * 0.85, 0.5 );
+  if ( vReg < 2.5 && vP.z > uHeadZ - 0.08 ) {
+    c = mix( c, uBase * 0.85, 0.5 * headK() );
     float nose = sstep( 0.79, 0.81, p.z ) * sstep( 0.2, 0.6, top + 0.25 );
     float must = sstep( 0.74, 0.76, p.z ) * sstep( 0.79, 0.77, p.z ) * sstep( 0.2, 0.6, 1.0 - abs( vN.y ) );
     float chin = sstep( 0.72, 0.78, p.z ) * sstep( 0.6, 0.85, bot );
@@ -100,7 +103,7 @@ vec4 coat() {
   c *= 0.9 + 0.2 * n;
   // Crête dorsale plus sombre
   c *= 1.0 - 0.3 * sstep( 0.8, 1.0, top ) * step( vReg, 1.5 );
-  if ( vReg > 1.5 && vReg < 2.5 ) {
+  if ( vReg < 2.5 && vP.z > uHeadZ - 0.08 ) {
     // Joues claires des vieux mâles, groin
     c = mix( c, vec3( 0.4, 0.36, 0.3 ), uSex * 0.4 * sstep( 0.3, 0.8, bot ) * sstep( 0.68, 0.8, p.z ) * sstep( 0.95, 0.85, p.z ) );
     float snout = sstep( 1.035, 1.055, p.z );
@@ -125,7 +128,7 @@ vec4 coat() {
     // Gorge claire
     c = mix( c, vec3( 0.82, 0.76, 0.62 ), sstep( 0.65, 0.9, bot ) * sstep( 0.5, 0.62, p.z ) );
   }
-  if ( vReg > 1.5 && vReg < 2.5 ) {
+  if ( vReg < 2.5 && vP.z > uHeadZ - 0.08 ) {
     // Masque : face crème, bandes sombres de la corne à la commissure
     vec3 face = vec3( 0.86, 0.8, 0.66 );
     float side = abs( p.x );
@@ -167,8 +170,8 @@ vec4 coat() {
     float k = uFur < 0.5 ? 0.75 : uFur < 1.5 ? 0.95 : uFur < 2.5 ? 0.25 : 0.0;
     c = mix( c, vec3( 0.93, 0.9, 0.84 ), max( spot, line * sstep( -0.5, -0.3, p.z ) * sstep( 0.4, 0.2, p.z ) ) * k );
   }
-  if ( vReg > 1.5 && vReg < 2.5 ) {
-    c = mix( c, c * 1.12, 0.5 );
+  if ( vReg < 2.5 && vP.z > uHeadZ - 0.08 ) {
+    c = mix( c, c * 1.12, 0.5 * headK() );
     c = mix( c, vec3( 0.05 ), sstep( 1.04, 1.055, p.z ) * sstep( 0.2, 0.6, top + 0.2 ) );
   }
   if ( vReg > 2.5 && vReg < 3.5 ) {
@@ -241,7 +244,7 @@ export class CoatPainter {
         fragmentShader: fragFor(species),
         uniforms: {
           uBase: { value: new THREE.Color() }, uSex: { value: 1 }, uFur: { value: 0 }, uScale: { value: 1 },
-          uSeed: { value: 0 }, uOffset: { value: new THREE.Vector2() },
+          uSeed: { value: 0 }, uOffset: { value: new THREE.Vector2() }, uHeadZ: { value: 0 },
         },
         side: THREE.DoubleSide,
         depthTest: false,
@@ -259,6 +262,8 @@ export class CoatPainter {
     mat.uniforms.uFur.value = furIndex;
     mat.uniforms.uScale.value = scale;
     mat.uniforms.uSeed.value = (species.length * 13.7) % 7;
+    const sp = SPECIES[species];
+    mat.uniforms.uHeadZ.value = sp ? sp.body[sp.headStart][0] : 0;
     const w = size, h = size / 2;
     const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.UnsignedByteType, depthBuffer: false });
     const scene = new THREE.Scene();

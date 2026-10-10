@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { Player } from '../game/player.js';
 import { AnimalFactory } from '../animals/factory.js';
 import { SPECIES, MEDAL_NAMES } from '../animals/species.js';
-import { makeTrophy, buildTrophyGeometry, antlerMaterial } from '../animals/trophies.js';
+import { makeTrophy, buildTrophyGeometry, antlerMaterial, trophyTitle } from '../animals/trophies.js';
 import { BIRDS } from '../animals/birds.js';
 import { WEAPONS, OUTFITS, SKINS, AMMO, OPTICS, GEAR, DUCKS } from '../data/catalog.js';
 import * as Save from '../core/save.js';
@@ -17,7 +17,7 @@ import { BARK } from '../gfx/vegTextures.js';
 import { FOREST } from '../gfx/terrainLayers.js';
 import { OAK_FLOOR, PLASTER, PANEL, BEAM, STONE, RUG, CLUB_LEATHER, FURN } from '../gfx/lodgeTextures.js';
 import { Batcher, boxGeo, wallGeo, wallMatrix, roughFromAlpha, LabelAtlas, engrave, carvedSign } from './lodgeBuild.js';
-import { shoulderMount, fullMount, shieldGeometry, ovalGeometry, birdMount, MEDAL_COLORS } from './mounts.js';
+import { shoulderMount, fullMount, shieldGeometry, ovalGeometry, birdMount, skullMount, tuskPlaque, MEDAL_COLORS } from './mounts.js';
 import { ReserveMap, WORLD, PLACES, STANDS, PATHS } from './reserveMap.js';
 import { makeNoise } from '../core/noise.js';
 import { fmt, clamp, lerp, smoothstep, rng, nextFrame } from '../core/math.js';
@@ -245,7 +245,14 @@ export class Lodge {
     await step(0.9, 'Lumières');
     this.buildLights();
     this.buildSunRays();
-    this.sb.build(this.root, 'static');
+    const built = this.sb.build(this.root, 'static');
+    // Fourrure des animaux naturalisés (coques instanciées sur les maillages figés)
+    for (const m of built) {
+      const c = m.material.userData && m.material.userData.coat;
+      if (!c) continue;
+      const sh = this.factory.staticShells(m.geometry, c.species, c.sex, c.fur);
+      if (sh) { sh.name = 'fur'; this.root.add(sh); }
+    }
     this.player = new Player(this, { x: 0, z: 4.9, yaw: 0 });
     // Point de vue imposé (captures de contrôle) : ?cam=x,z,lacet,tangage
     const cam = new URLSearchParams(location.search).get('cam');
@@ -964,7 +971,7 @@ export class Lodge {
     jobs.push(() => {
       const ind = { species: 'cerf', sex: 'm', fur: 'brun', scale: 1.06, trophy: makeTrophy('cerf', 1931, 0.92, 0.95), legendary: false };
       const r = shoulderMount(this.factory, ind, { lookYaw: 0.12, tilt: 0.12 });
-      this.wallMount(r, v3(0, 2.62, -5.75), 0, atlas, plates, engrave('Cerf du fondateur', 'Forêt des Hêtres · 1931'), null);
+      this.wallMount(r, v3(0, 2.62, -5.75), 0, atlas, plates, engrave('Cerf du fondateur', `${trophyTitle('cerf', 'm', ind.trophy)} · Forêt des Hêtres · 1931`), null);
     });
     // Socles : le plus beau trophée de chaque espèce, animal entier
     // [x, z, orientation, longueur, largeur] : les animaux regardent l'entrée, profil vers l'allée
@@ -991,6 +998,27 @@ export class Lodge {
         this.wallMount(r, v3(x, y, z + (ry ? -0.0 : 0.0)), ry, atlas, plates, this.trophyText(t), t);
       });
     });
+    // Massacres : les trophées suivants, crânes blanchis et armes de sanglier sur écussons,
+    // sur la cloison de la salle des trophées (grands bois en haut, brocards, chamois et sangliers en bas)
+    const more = big.filter((t) => !used.has(t)).slice(8).filter((t) => t.trophy);
+    const zs = [-4.4, 4.4, -5.7, 5.7, -3.1, 3.1];
+    const high = zs.map((z) => [z, 2.85]), low = zs.map((z) => [z, 1.62]);
+    for (const t of more) {
+      const tall = t.species === 'cerf' || t.species === 'daim';
+      const slot = tall ? high.shift() : low.shift() || high.shift();
+      if (!slot) continue;
+      jobs.push(() => this.massacre(t, v3(-PX - 0.15, slot[1], slot[0]), -Math.PI / 2, atlas, plates, this.trophyText(t)));
+    }
+    // Collection du domaine : tableau de brocards anciens au-dessus des bibliothèques
+    const OLD = [['Les Grands Prés', 1958], ['Bois des Moines', 1962], ['La Combe Noire', 1967], ['Le Haut-Fourneau', 1971], ['Les Brandes', 1974], ['Le Chêne Rond', 1979],
+      ['La Fontaine-aux-Loups', 1983], ['Les Essarts', 1986], ['Le Petit Marais', 1990], ['Les Charmes', 1994], ['La Croix Blanche', 1999], ['Le Val Sec', 2003]];
+    OLD.forEach(([place, year], i) => {
+      const side = i < 6 ? -1 : 1, k = i % 6;
+      const x = side * [3.1, 3.75, 4.4][k % 3], y = k < 3 ? 2.95 : 3.6;
+      const tr = makeTrophy('chevreuil', 1900 + year + i * 7, 0.35 + ((i * 37) % 60) / 100, 0.9);
+      jobs.push(() => this.massacre({ species: 'chevreuil', sex: 'm', trophy: tr, medal: tr.medal }, v3(x, y, Z0), 0, atlas, plates,
+        engrave(trophyTitle('chevreuil', 'm', tr), `${place} · ${year}`), `Collection du domaine : ${trophyTitle('chevreuil', 'm', tr).toLowerCase()} (${place}, ${year})`));
+    });
     // Mur ouest : gibier d'eau en vol de part et d'autre de la fenêtre
     const dslots = [[-2.45, 2.85, 1], [2.45, 2.85, -1], [-3.75, 2.0, 1], [3.75, 2.0, -1], [-2.45, 1.55, 1], [2.45, 1.55, -1]];
     ducks.slice(0, 6).forEach((t, i) => jobs.push(() => this.duckMount(t, dslots[i], atlas, plates)));
@@ -1006,8 +1034,12 @@ export class Lodge {
     for (const p of plates) p.geo.dispose();
   }
 
+  trophyName(t) {
+    return trophyTitle(t.species, t.sex, t.trophy) || SPECIES[t.species].name;
+  }
+
   trophyText(t) {
-    const full = SPECIES[t.species] ? SPECIES[t.species].name : BIRD_NAMES[t.species] || t.species;
+    const full = SPECIES[t.species] ? trophyTitle(t.species, t.sex, t.trophy) || SPECIES[t.species].name : BIRD_NAMES[t.species] || t.species;
     const score = DUCKS.has(t.species) ? fmt.dec(t.weight, 2) + ' kg' : fmt.dec(t.score || 0, 1) + ' pts';
     return engrave(full, `${MEDAL_NAMES[t.medal] || ''} · ${score} · ${new Date(t.date || Date.now()).toLocaleDateString('fr-FR')}`);
   }
@@ -1030,8 +1062,38 @@ export class Lodge {
     plates.push({ geo: pg, m: W.clone().multiply(at(0, -shH * 0.43, thick + 0.002)) });
     if (t && t.medal && t.medal !== 'aucune') this.medal(W.clone().multiply(at(shW * 0.3, -shH * 0.3, thick + 0.004)), t.medal);
     const head = v3(0, r.top * 0.45, r.depth * 0.6).applyMatrix4(W);
-    const label = t ? `${SPECIES[t.species].name} · ${MEDAL_NAMES[t.medal]} · ${fmt.dec(t.score || 0, 1)} pts — voir tous vos trophées` : 'Cerf du fondateur (1931) — la salle des trophées est à gauche';
+    const label = t ? `${this.trophyName(t)} · ${MEDAL_NAMES[t.medal]} · ${fmt.dec(t.score || 0, 1)} pts — voir tous vos trophées` : 'Cerf du fondateur (1931) — la salle des trophées est à gauche';
     this.items.push({ id: 'mount', pos: head, r: 5.5, cone: 0.16, label, run: () => this.app.ui.openTrophies() });
+  }
+
+  // Massacre sur écusson (crâne blanchi et bois ou cornes) ou armes de sanglier, plaque gravée dessous
+  massacre(t, pos, ry, atlas, plates, draw, label) {
+    const spec = SPECIES[t.species];
+    const ind = { species: t.species, sex: t.sex || 'm', fur: t.fur || spec.furs[0].id, scale: 1, trophy: t.trophy || makeTrophy(t.species, 7, 0.5, 0.9), legendary: !!t.legendary };
+    const W = at(pos.x, pos.y, pos.z, ry);
+    const thick = 0.03;
+    let sw, sh, sy, top, depth;
+    if (t.species === 'sanglier') {
+      const m = tuskPlaque(ind);
+      sw = Math.max(0.22, m.w * 1.12); sh = Math.max(0.26, m.h * 1.3); sy = m.cy + m.h * 0.04;
+      this.sb.add(this.mAntler, m.geo, W.clone().multiply(at(0, 0, thick - 0.004)));
+      m.geo.dispose();
+      top = m.cy + m.h / 2; depth = 0.08;
+    } else {
+      const m = skullMount(ind);
+      sw = Math.max(0.24, m.skull.w * 2.2); sh = Math.max(0.3, m.skull.h * 1.25); sy = m.skull.cy + 0.02;
+      this.sb.add(this.mAntler, m.geo, W.clone().multiply(at(0, 0, thick)));
+      m.geo.dispose();
+      top = m.top; depth = m.depth;
+    }
+    const sg = shieldGeometry(sw, sh, thick);
+    this.sb.add(this.mShield, sg, W.clone().multiply(at(0, sy, thick)));
+    sg.dispose();
+    const pw = Math.min(0.24, Math.max(0.17, sw * 0.8));
+    plates.push({ geo: atlas.plate(pw, pw * 0.25, 0.006, atlas.cell(draw)), m: W.clone().multiply(at(0, sy - sh / 2 - 0.05, 0.004)) });
+    if (t.medal && t.medal !== 'aucune' && !label) this.medal(W.clone().multiply(at(sw * 0.32, sy - sh * 0.3, thick + 0.004)), t.medal);
+    const head = v3(0, (sy + top) * 0.5, depth * 0.5).applyMatrix4(W);
+    this.items.push({ id: 'mount', pos: head, r: 5, cone: 0.14, label: label || `${this.trophyName(t)} · ${MEDAL_NAMES[t.medal]} · ${fmt.dec(t.score || 0, 1)} pts — voir tous vos trophées`, run: () => this.app.ui.openTrophies() });
   }
 
   medal(m, medal) {
@@ -1086,7 +1148,7 @@ export class Lodge {
     r.body.dispose();
     for (const q of r.parts) { this.sb.add(q.antler ? this.mAntler : q.mat, q.geo, m); q.geo.dispose(); }
     if (t.medal && t.medal !== 'aucune') this.medal(pm.clone().multiply(at(0.22, 0, 0.004)), t.medal);
-    this.items.push({ id: 'mount', pos: v3(x, 1.0 * (t.scale || 1), z), r: 5.5, cone: 0.2, label: `${spec.name} · ${MEDAL_NAMES[t.medal]} · ${fmt.dec(t.score || 0, 1)} pts — voir tous vos trophées`, run: () => this.app.ui.openTrophies() });
+    this.items.push({ id: 'mount', pos: v3(x, 1.0 * (t.scale || 1), z), r: 5.5, cone: 0.2, label: `${this.trophyName(t)} · ${MEDAL_NAMES[t.medal]} · ${fmt.dec(t.score || 0, 1)} pts — voir tous vos trophées`, run: () => this.app.ui.openTrophies() });
   }
 
   duckMount(t, [dz, y, dir], atlas, plates) {

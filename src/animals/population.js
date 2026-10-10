@@ -124,14 +124,18 @@ export class Population {
         this.scene.add(a.vis.holder);
       } else if (!want && a.vis && !(a.dead && a._d < 700)) {
         this.scene.remove(a.vis.holder);
+        this.factory.release(a.vis);
         a.vis = null;
         a.lod = -1;
       }
       if (a.vis) {
         const lod = a._d < q.animalsFull * 0.3 ? 0 : a._d < q.animalsFull ? 1 : 2;
-        if (lod !== a.lod) {
-          this.factory.setLod(a.vis, lod);
+        // La fourrure apparaît sous 38 m (aussi à la lunette : distance réelle)
+        const furNear = lod === 0 && a._d < 38;
+        if (lod !== a.lod || furNear !== a._fur) {
+          this.factory.setLod(a.vis, lod, a._d);
           a.lod = lod;
+          a._fur = furNear;
         }
         shown++;
       }

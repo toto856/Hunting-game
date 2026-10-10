@@ -4,6 +4,7 @@ import * as Save from '../core/save.js';
 import { WEAPONS, AMMO, OPTICS, GEAR, OUTFITS, SKINS, xpForLevel } from '../data/catalog.js';
 import { SPECIES, MEDALS, MEDAL_NAMES } from '../animals/species.js';
 import { buildVitals } from '../animals/vitals.js';
+import { trophyTitle, trophySummary } from '../animals/trophies.js';
 import { PLACES, STANDS, PATHS } from '../world/reserveMap.js';
 import { energyAt } from '../game/ballistics.js';
 import { fmt, clamp } from '../core/math.js';
@@ -532,8 +533,9 @@ export class UI {
       <div class="trophy-grid">${list.map((t) => `
         <article class="trophy ${MEDAL_CLASS[t.medal]}">
           <div class="t-medal"><span>${t.duck ? fmt.dec(t.weight, 2) : fmt.dec(t.score, 1)}</span><em>${t.duck ? 'kg' : 'pts'}</em></div>
-          <div><h4>${esc(speciesName(t.species))}${best[t.species] === t.id ? ' <span class="best">record</span>' : ''}</h4>
-          <p>${MEDAL_NAMES[t.medal]}${t.legendary ? ' · Légendaire' : ''}${t.duck ? '' : ' · ' + fmt.kg(t.weight)}</p>
+          <div><h4>${esc(t.duck ? speciesName(t.species) : trophyTitle(t.species, t.sex, t.trophy) || speciesName(t.species))}${best[t.species] === t.id ? ' <span class="best">record</span>' : ''}</h4>
+          <p>${t.duck ? '' : esc(speciesName(t.species)) + ' · '}${MEDAL_NAMES[t.medal]}${t.legendary ? ' · Légendaire' : ''}${t.duck ? '' : ' · ' + fmt.kg(t.weight)}</p>
+          ${t.trophy ? `<p class="muted small">${esc(trophySummary(t.trophy))}</p>` : ''}
           <p class="muted small">${new Date(t.date).toLocaleDateString('fr-FR')}${t.dist ? ' · tir à ' + t.dist + ' m' : ''}${t.weapon ? ' · ' + esc(t.weapon) : ''}</p></div>
         </article>`).join('')}</div>`, { panel: 'wide', onClose: back });
     void w;

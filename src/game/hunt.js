@@ -9,7 +9,7 @@ import { Ballistics, energyAt } from './ballistics.js';
 import { AnimalFactory } from '../animals/factory.js';
 import { Population } from '../animals/population.js';
 import { SPECIES, MEDAL_NAMES } from '../animals/species.js';
-import { trophySummary } from '../animals/trophies.js';
+import { trophySummary, trophyTitle } from '../animals/trophies.js';
 import { GunFactory } from '../gfx/guns.js';
 import { Effects } from '../gfx/effects.js';
 import { Structures } from '../world/structures.js';
@@ -471,7 +471,7 @@ export class Hunt {
     return {
       species: ind.species, sex: ind.sex, name: spec[ind.sex === 'm' ? 'male' : 'female'], speciesName: spec.name,
       weight: ind.weight, fur: spec.furs.find((f) => f.id === ind.fur)?.name || ind.fur, furId: ind.fur, rareFur: furK > 1,
-      trophy, score: trophy ? trophy.score : 0, medal, medalName: MEDAL_NAMES[medal], summary: trophySummary(trophy),
+      trophy, score: trophy ? trophy.score : 0, medal, medalName: MEDAL_NAMES[medal], summary: trophySummary(trophy), title: trophyTitle(ind.species, ind.sex, trophy),
       outcome, outcomeText: OUTCOME_TEXT[outcome], quality, ethical, shots, dist, money, xp, fine, notes,
       weapon: first ? first.weaponName : '', organs: animal.wounds.flatMap((w) => w.organs.map((o) => o.key)),
       wounds: animal.wounds, legendary: ind.legendary, ind,

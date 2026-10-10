@@ -26,6 +26,16 @@ export function fillDemo() {
   add('chamois', 'm', 0.85, 0.9);
   add('daim', 'm', 0.95, 0.9);
   add('daim', 'm', 0.6, 0.6);
+  add('chevreuil', 'm', 0.8, 0.8);
+  add('chevreuil', 'm', 0.45, 0.6);
+  add('chevreuil', 'm', 1.0, 0.95);
+  add('sanglier', 'm', 0.75, 0.8);
+  add('sanglier', 'm', 0.5, 0.6);
+  add('chamois', 'm', 0.65, 0.7);
+  add('chamois', 'f', 0.55, 0.8);
+  add('cerf', 'm', 0.85, 0.85);
+  add('cerf', 'm', 0.65, 0.7);
+  add('daim', 'm', 0.8, 0.8);
   for (const [sp, sex] of [['colvert', 'm'], ['colvert', 'f'], ['sarcelle', 'm'], ['pilet', 'm'], ['oie', 'm'], ['siffleur', 'm']]) {
     const b = BIRDS[sp];
     const w = b.weight[0] + (b.weight[1] - b.weight[0]) * (0.75 + r() * 0.25);

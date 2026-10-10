@@ -55,36 +55,34 @@ export function sampleBody(spec, n, sex = 'm') {
 
 // Point de surface du corps pour (station, angle a) ; a = 0 sous le ventre, π au-dessus
 export function bodyPoint(spec, st, a, out = new THREE.Vector3(), nrmOut = null) {
-  const region = st.f >= spec.headStart ? 2 : st.f >= spec.neckStart ? 1 : 0;
-  const n = region === 0 ? 2.1 : region === 1 ? 2.05 : 2.0;
+  // Transitions douces corps -> cou -> tête (évite une marche au garrot)
+  const wNeck = smooth01((st.f - (spec.neckStart - 1.2)) / 2.4);
+  const wHead = smooth01((st.f - (spec.headStart - 0.7)) / 1.4);
+  const n = lerp3(2.1, 2.05, 2.0, wNeck, wHead);
   const s = Math.sin(a), c = -Math.cos(a);
   const ex = 2 / n;
-  let x = st.w * Math.sign(s) * Math.pow(Math.abs(s), ex);
+  const x0 = st.w * Math.sign(s) * Math.pow(Math.abs(s), ex);
   let y = (c > 0 ? st.dT : st.dB) * Math.sign(c) * Math.pow(Math.abs(c), ex);
   const top = Math.max(0, c), bot = Math.max(0, -c);
-  if (region === 0) {
-    const L = spec.body.length;
+  // Corps : dos étroit, flancs pleins, cuisses, épaules, bréchet étroit
+  let xb = x0;
+  {
     const fi = st.f;
     const rearK = smooth01((spec.body.length * 0.3 - fi) / (spec.body.length * 0.18));
     const chestK = smooth01((fi - spec.neckStart * 0.55) / (spec.neckStart * 0.35));
-    // Dos étroit vers l'échine, flancs pleins
-    x *= 1 - 0.2 * Math.pow(top, 2.2) + 0.05 * (1 - c * c);
-    // Cuisses : renflement bas-côté à l'arrière
-    x *= 1 + 0.2 * rearK * Math.exp(-Math.pow((c + 0.3) / 0.38, 2));
-    // Épaules (omoplates) en haut-côté, bréchet étroit en bas à l'avant
-    x *= 1 + 0.07 * chestK * Math.exp(-Math.pow((c - 0.25) / 0.3, 2));
-    x *= 1 - 0.32 * chestK * Math.pow(bot, 2.2);
-    void L;
-  } else if (region === 1) {
-    // Cou : comprimé latéralement, gorge arrondie
-    x *= 1 - 0.1 * Math.pow(top, 2);
-  } else {
-    // Tête : chanfrein étroit, joues/mâchoire plus larges à l'arrière
-    const hk = (st.f - spec.headStart) / Math.max(1, spec.body.length - 1 - spec.headStart);
-    x *= 1 - 0.32 * Math.pow(top, 2) * (0.35 + hk);
-    x *= 1 + 0.16 * Math.pow(bot, 1.3) * (1 - hk) * (1 - hk);
-    if (c < 0) y *= 1 - 0.12 * hk;
+    xb *= 1 - 0.2 * Math.pow(top, 2.2) + 0.05 * (1 - c * c);
+    xb *= 1 + 0.2 * rearK * Math.exp(-Math.pow((c + 0.3) / 0.38, 2));
+    xb *= 1 + 0.07 * chestK * Math.exp(-Math.pow((c - 0.25) / 0.3, 2));
+    xb *= 1 - 0.32 * chestK * Math.pow(bot, 2.2);
   }
+  // Cou : comprimé latéralement, gorge arrondie
+  const xn = x0 * (1 - 0.1 * Math.pow(top, 2));
+  // Tête : chanfrein étroit, joues/mâchoire plus larges à l'arrière
+  const hk = Math.max(0, (st.f - spec.headStart) / Math.max(1, spec.body.length - 1 - spec.headStart));
+  let xh = x0 * (1 - 0.32 * Math.pow(top, 2) * (0.35 + hk));
+  xh *= 1 + 0.16 * Math.pow(bot, 1.3) * (1 - hk) * (1 - hk);
+  const x = lerp3(xb, xn, xh, wNeck, wHead);
+  if (c < 0) y *= 1 - 0.12 * hk * wHead;
   // Repère : tangente T (dans yz), U perpendiculaire "dessus", L latéral (x)
   const Uy = st.tz, Uz = -st.ty;
   out.set(x, st.y + Uy * y, st.z + Uz * y);
@@ -94,6 +92,11 @@ export function bodyPoint(spec, st, a, out = new THREE.Vector3(), nrmOut = null)
     nrmOut.set(nx, Uy * ny, Uz * ny).normalize();
   }
   return out;
+}
+
+function lerp3(a, b, c, w1, w2) {
+  const ab = a + (b - a) * w1;
+  return ab + (c - ab) * w2;
 }
 
 // Demi-largeur de la surface du corps à (z, y) — sert à poser les yeux à fleur de peau
@@ -248,7 +251,10 @@ export function buildRig(spec, sex, lod) {
       w = w.map(([i, x]) => [i, x * (1 - Math.max(fks * 0.75, rks * 0.85))]);
       if (fks > 0) w.push([bi('fUpper' + side), fks * 0.75]);
       if (rks > 0) w.push([bi('rUpper' + side), rks * 0.85]);
-      const region = s.f >= spec.headStart ? 2 : s.f >= spec.neckStart ? 1 : 0;
+      // Régions continues (corps 0..0.7, cou 1..1.45, tête 2) : longueur de poil fondue d'une zone à l'autre
+      const region = s.f >= spec.headStart ? 2
+        : s.f >= spec.neckStart ? 1 + 0.45 * smooth01((s.f - (spec.headStart - 1.2)) / 1.2)
+          : 0.7 * smooth01((s.f - (spec.neckStart - 1.5)) / 1.5);
       md.add(tmp, nrm, bx + (k / (nSt - 1)) * bw, by + (j / nRing) * bh, arcs[k] / 0.05, (j / nRing) * circ / 0.05, w, region);
     }
   }
@@ -363,36 +369,63 @@ export function buildRig(spec, sex, lod) {
       }
   }
 
-  // ---- Oreilles (coquille mince à deux faces)
+  // ---- Oreilles : cornet roulé à la base, s'aplatissant vers la pointe, bord épais ;
+  // face interne (concave, claire) tournée vers l'avant et l'extérieur
+  const quad = (a, b, c, d, want) => {
+    // Triangles (a, b, c) et (b, d, c) orientés selon la normale voulue
+    const P = (i) => new THREE.Vector3(md.pos[i * 3], md.pos[i * 3 + 1], md.pos[i * 3 + 2]);
+    const pa = P(a), nrm = new THREE.Vector3().crossVectors(P(b).sub(pa), P(c).sub(pa));
+    if (nrm.dot(want) >= 0) md.idx.push(a, b, c, b, d, c);
+    else md.idx.push(a, c, b, b, c, d);
+  };
   for (const side of [1, -1]) {
     const S = side > 0 ? 'L' : 'R';
     const E = spec.ear;
     const base = new THREE.Vector3(E.base[0] * side, E.base[1], E.base[2]);
-    const nu = [7, 5, 3][lod], nv = [5, 3, 2][lod];
+    const nu = [9, 6, 3][lod], nv = [6, 4, 2][lod];
     const [ex, ey, ew, eh] = ATLAS.ear;
+    const W8 = [[bi('ear' + S), 1]];
     const up = new THREE.Vector3(side * Math.sin(E.tilt) * E.spread, Math.cos(E.tilt), -0.35).normalize();
-    const out = new THREE.Vector3(side, 0.15, 0.25).normalize();
+    const out = new THREE.Vector3(side * 0.62, 0.12, 0.78);
+    out.addScaledVector(up, -out.dot(up)).normalize();
     const across = new THREE.Vector3().crossVectors(up, out).normalize();
-    for (const face of [1, -1]) {
-      const start = md.n;
+    const grid = (face) => {
+      const st = md.n;
       for (let i = 0; i <= nu; i++) {
         const t = i / nu;
-        const width = E.w * Math.sin(Math.PI * Math.min(1, t * 0.92 + 0.08)) * (1 - t * 0.25);
+        const width = E.w * (0.62 + 0.38 * Math.sin(Math.PI * Math.min(1, t * 1.05))) * (1 - t * t * t) + 0.002;
+        const span = 2.5 - 1.5 * t; // angle d'enroulement de la section
+        const rho = width / span;
+        const th = (0.007 - 0.0045 * t) * (spec.id === 'sanglier' ? 1.4 : 1);
         for (let j = 0; j <= nv; j++) {
           const v = j / nv - 0.5;
-          const cup = (1 - (2 * v) ** 2) * width * 0.35;
-          const p = base.clone().addScaledVector(up, t * E.len).addScaledVector(across, v * width * 2).addScaledVector(out, cup * face * 0.15 - cup);
-          if (face < 0) p.addScaledVector(out, -0.004);
-          const nn = out.clone().multiplyScalar(face);
-          md.add(p, nn, ex + (j / nv) * ew * 0.5 + (face < 0 ? ew * 0.5 : 0), ey + t * eh, t, v, [[bi('ear' + S), 1]], 5);
+          const a = v * span;
+          const nIn = across.clone().multiplyScalar(-Math.sin(a)).addScaledVector(out, Math.cos(a));
+          const p = base.clone().addScaledVector(up, t * E.len).addScaledVector(across, rho * Math.sin(a)).addScaledVector(out, rho * (1 - Math.cos(a)) - rho * 0.35);
+          if (face > 0) p.addScaledVector(nIn, th);
+          md.add(p, face > 0 ? nIn : nIn.clone().negate(), ex + (j / nv) * ew * 0.5 + (face > 0 ? ew * 0.5 : 0), ey + t * eh, t, v, W8, 5);
         }
       }
-      for (let i = 0; i < nu; i++)
-        for (let j = 0; j < nv; j++) {
-          const a = start + i * (nv + 1) + j, b = a + 1, c = a + nv + 1, d = c + 1;
-          if (face * side > 0) md.idx.push(a, b, c, b, d, c);
-          else md.idx.push(a, c, b, b, c, d);
-        }
+      return st;
+    };
+    const o0 = grid(-1), i0 = grid(1);
+    const at = (st, i, j) => st + i * (nv + 1) + j;
+    const tmpN = new THREE.Vector3();
+    for (let i = 0; i < nu; i++)
+      for (let j = 0; j < nv; j++) {
+        const a2 = ((j + 0.5) / nv - 0.5) * (2.5 - 1.5 * (i + 0.5) / nu);
+        tmpN.copy(across).multiplyScalar(-Math.sin(a2)).addScaledVector(out, Math.cos(a2));
+        quad(at(i0, i, j), at(i0, i, j + 1), at(i0, i + 1, j), at(i0, i + 1, j + 1), tmpN);
+        quad(at(o0, i, j), at(o0, i, j + 1), at(o0, i + 1, j), at(o0, i + 1, j + 1), tmpN.clone().negate());
+      }
+    // Bord : relie les deux faces le long des deux lisières
+    for (const j of [0, nv]) {
+      const sgn = j === 0 ? -1 : 1;
+      for (let i = 0; i < nu; i++) {
+        const a2 = sgn * 0.5 * (2.5 - 1.5 * (i + 0.5) / nu);
+        tmpN.copy(across).multiplyScalar(Math.cos(a2) * sgn).addScaledVector(out, Math.sin(a2) * sgn);
+        quad(at(o0, i, j), at(i0, i, j), at(o0, i + 1, j), at(i0, i + 1, j), tmpN);
+      }
     }
   }
 
@@ -404,6 +437,8 @@ export function buildRig(spec, sex, lod) {
   g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(md.si, 4));
   g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(md.sw, 4));
   g.setAttribute('aRegion', new THREE.Float32BufferAttribute(md.reg, 1));
+  // Atténuation des poils (0 : fourrure normale ; 1 : aucune), utilisée au ras des coupes des trophées
+  g.setAttribute('aCut', new THREE.Float32BufferAttribute(new Float32Array(md.reg.length), 1));
   g.setIndex(md.idx);
   // Normales lissées (le corps et les pattes se raccordent mieux)
   g.computeVertexNormals();

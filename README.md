@@ -13,7 +13,8 @@ Jeu de chasse réaliste à la première personne, dans le navigateur (ordinateur
 Un pavillon en 3D que l'on parcourt librement :
 
 - **Grande salle** : cheminée, lustres en bois de cerf, maquette en relief du domaine sur la table des cartes (c'est là qu'on prépare la sortie : type de chasse, mirador ou hutte, moment de la journée, météo), registre de votre progression, carnet du chasseur.
-- **Salle des trophées** (à gauche) : vos prises sont naturalisées. Le plus beau trophée de chaque espèce est présenté en entier sur un socle, les suivants en tête sur écusson de chêne avec plaque gravée et médaille ; les canards médaillés « en vol » au mur.
+- **Salle des trophées** (à gauche) : vos prises sont naturalisées. Le plus beau trophée de chaque espèce est présenté en entier sur un socle, les huit suivants en tête (en cape) sur écusson de chêne avec plaque gravée et médaille, puis les autres en massacres : crânes blanchis avec leurs bois ou cornes, et armes de sanglier (défenses et grès) sur écusson. Les canards médaillés sont « en vol » au mur. Au-dessus des bibliothèques de la grande salle, la collection du domaine : un tableau de brocards anciens.
+- **Trophées réalistes** : meules perlées, gouttières et perlures, pointes polies ; merrains du cerf en lyre avec andouiller d'œil, surandouiller, chevillure et empaumure ; palmes du daim et leurs épois ; cornes annelées du chamois ; défenses à biseau d'usure. Appellations françaises sur les plaques et au tableau (« Cerf 14 cors irrégulier », « Brocard 6 cors », « Solitaire », « Chamois bouc »…).
 - **Armurerie** (à droite) : râteliers de carabines et de fusils (avec vos finitions et lunettes), vitrine des armes exclusives à gagner, comptoir (munitions, optiques, jumelles, appeaux, chien), établi (finitions).
 - **Vestiaire** : mannequins portant chaque tenue (loden, gilet orange, camouflages, ghillie, tenues exclusives).
 

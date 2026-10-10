@@ -22,6 +22,71 @@ void layer( vec2 uv, out vec3 alb, out float rough, out float h ) {
   alb = vec3( h ); rough = 1.0;
 }`;
 
+// Fourrure en coques : longueur des poils (m), densité (poils par 5 cm), crinière, crête dorsale
+export const FUR = {
+  cerf: { len: 0.017, dens: 13, mane: 2.6, crest: 0.4 },
+  chevreuil: { len: 0.012, dens: 15, mane: 1.1, crest: 0.2 },
+  sanglier: { len: 0.03, dens: 8, mane: 1.5, crest: 1.6 },
+  chamois: { len: 0.022, dens: 12, mane: 1.4, crest: 1.3 },
+  daim: { len: 0.012, dens: 14, mane: 1.5, crest: 0.2 },
+};
+
+const SHELL_VERT_PARS = /* glsl */ `
+attribute float aRegion;
+attribute float aCut;
+attribute vec2 uv1;
+uniform float uShell; uniform float uShellN; uniform float uFurLen; uniform float uMane; uniform float uCrest;
+varying float vShell; varying vec2 vFurUv; varying float vLenK;
+`;
+// Gonflement le long de la normale ; les poils retombent (gravité dans le plan tangent)
+const SHELL_VERT = /* glsl */ `
+#ifdef USE_INSTANCING
+  float shellK = ( float( gl_InstanceID ) + 1.0 ) / uShellN;
+#else
+  float shellK = uShell;
+#endif
+float lenK = aRegion < 0.75 ? mix( 1.0, uMane, smoothstep( 0.25, 0.7, aRegion ) )
+  : aRegion < 1.5 ? mix( uMane, 0.4, smoothstep( 1.1, 1.45, aRegion ) )
+  : aRegion < 2.5 ? 0.4 : aRegion < 3.5 ? 0.5 : aRegion < 4.5 ? 1.3 : 0.0;
+lenK *= 1.0 - aCut;
+vec3 nO = normalize( objectNormal );
+lenK *= 1.0 + uCrest * smoothstep( 0.55, 0.95, nO.y ) * step( aRegion, 1.5 );
+float hh = shellK * uFurLen * lenK;
+vec3 grav = vec3( 0.0, -1.0, 0.0 );
+vec3 comb = grav - nO * dot( grav, nO );
+transformed += nO * hh + comb * hh * shellK * 0.9;
+vShell = shellK; vFurUv = uv1; vLenK = lenK;
+`;
+const SHELL_FRAG_PARS = /* glsl */ `
+uniform float uDens;
+varying float vShell; varying vec2 vFurUv; varying float vLenK;
+float fHash( vec2 p ) { vec3 p3 = fract( vec3( p.xyx ) * 0.1031 ); p3 += dot( p3, p3.yzx + 33.33 ); return fract( ( p3.x + p3.y ) * p3.z ); }
+`;
+// Mèches : une par cellule, effilée vers la pointe ; racines plus sombres
+const SHELL_FRAG = /* glsl */ `
+{
+  if ( vLenK < 0.01 ) discard;
+  vec2 g = vFurUv * uDens;
+  vec2 id = floor( g );
+  vec2 f = fract( g );
+  float rnd = fHash( id );
+  vec2 c = vec2( fHash( id + 7.1 ), fHash( id + 3.7 ) ) * 0.56 + 0.22;
+  float strandH = 0.3 + 0.7 * rnd;
+  float rad = 0.5 * ( 1.0 - vShell / strandH );
+  float d = length( f - c );
+  float cov = vShell > strandH ? 0.0 : clamp( ( rad - d ) / max( fwidth( d ), 1e-4 ) + 0.5, 0.0, 1.0 );
+  // De loin, les poils deviennent plus fins qu'un pixel : couverture moyenne (duvet) au lieu du motif
+  float px = length( fwidth( g ) );
+  float covStat = ( 1.0 - smoothstep( 0.25, 1.0, vShell ) ) * 0.7;
+  cov = mix( cov, covStat, smoothstep( 0.5, 1.6, px ) );
+  // Silhouettes vues en biais : les coques externes s'effacent (pas de voile autour du pelage)
+  float ndv = abs( dot( normalize( vNormal ), normalize( vViewPosition ) ) );
+  cov *= 1.0 - vShell * 0.85 * ( 1.0 - smoothstep( 0.08, 0.45, ndv ) );
+  diffuseColor.a = cov;
+  diffuseColor.rgb *= mix( 0.74, 1.06, vShell ) * mix( 0.9 + 0.2 * rnd, 1.0, smoothstep( 0.4, 1.4, px ) );
+}
+`;
+
 // Soudure des normales aux coutures (même position => même normale)
 function weldNormals(geo) {
   const p = geo.attributes.position, n = geo.attributes.normal;
@@ -56,6 +121,69 @@ export class AnimalFactory {
     this.eyeMatAlbino = new THREE.MeshPhysicalMaterial({ color: 0x8a2a2a, roughness: 0.1, clearcoat: 1 });
     this.antlerMat = antlerMaterial();
     this.texSize = engine.q.texSize >= 1024 ? 1024 : 512;
+    this.shellMats = new Map();
+    // Nombre de coques de fourrure selon la qualité (0 : pas de fourrure)
+    const q = engine.q;
+    this.shellN = !q.fur ? 0 : q.shadowSize >= 4096 ? 12 : q.shadowSize >= 2048 && q.post ? 10 : 6;
+  }
+
+  // Matériau d'une coque de fourrure (k : hauteur relative, ou null pour la version instanciée)
+  shellMaterial(species, sex, fur, k, n) {
+    const key = species + sex + fur + ':' + (k === null ? 'i' + n : k.toFixed(3));
+    let m = this.shellMats.get(key);
+    if (m) return m;
+    const base = this.material(species, sex, fur);
+    const F = FUR[species] || FUR.cerf;
+    // Couverture par échantillons (anticrénelage actif) ou transparence stochastique : duvet sans tri
+    const a2c = !!this.engine.q.antialias;
+    m = new THREE.MeshStandardMaterial({ map: base.map, roughness: 0.95, alphaHash: !a2c, alphaToCoverage: a2c });
+    const uni = {
+      uShell: { value: k ?? 0 }, uShellN: { value: n }, uFurLen: { value: F.len }, uMane: { value: sex === 'm' ? F.mane : 1 + (F.mane - 1) * 0.3 },
+      uCrest: { value: F.crest }, uDens: { value: F.dens },
+    };
+    m.onBeforeCompile = (s) => {
+      injectGlobals(s);
+      Object.assign(s.uniforms, uni);
+      s.vertexShader = s.vertexShader
+        .replace('#include <common>', '#include <common>\n' + SHELL_VERT_PARS)
+        .replace('#include <skinning_vertex>', '#include <skinning_vertex>\n' + SHELL_VERT);
+      s.fragmentShader = s.fragmentShader
+        .replace('#include <common>', '#include <common>\n' + SHELL_FRAG_PARS)
+        .replace('#include <map_fragment>', '#include <map_fragment>\n' + SHELL_FRAG);
+    };
+    m.customProgramCacheKey = () => 'furshell' + (k === null ? 'i' : 's');
+    m.userData.extraAttrs = ['uv1', 'aRegion', 'aCut'];
+    this.shellMats.set(key, m);
+    return m;
+  }
+
+  // Coques de fourrure d'un animal articulé (partagent le squelette)
+  addShells(vis) {
+    if (vis.shells || !this.shellN) return;
+    const ind = vis.ind;
+    vis.shells = [];
+    for (let i = 1; i <= this.shellN; i++) {
+      const m = new THREE.SkinnedMesh(vis.lods[0].geometry, this.shellMaterial(ind.species, ind.sex, ind.fur, i / this.shellN, this.shellN));
+      m.bind(vis.skeleton, new THREE.Matrix4());
+      m.frustumCulled = false;
+      m.castShadow = false;
+      m.receiveShadow = true;
+      m.visible = vis.lods[0].visible;
+      vis.inner.add(m);
+      vis.shells.push(m);
+    }
+  }
+
+  // Coques instanciées pour un maillage figé (trophées du pavillon)
+  staticShells(geometry, species, sex, fur, n = this.shellN) {
+    if (!n) return null;
+    const m = new THREE.InstancedMesh(geometry, this.shellMaterial(species, sex, fur, null, n), n);
+    const id = new THREE.Matrix4();
+    for (let i = 0; i < n; i++) m.setMatrixAt(i, id);
+    m.castShadow = false;
+    m.receiveShadow = true;
+    m.frustumCulled = false;
+    return m;
   }
 
   rig(species, sex, lod) {
@@ -87,6 +215,8 @@ export class AnimalFactory {
         .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = mix( 0.28, 0.95, smoothstep( 0.3, 0.9, coatRough ) );');
     };
     m.customProgramCacheKey = () => 'animal';
+    m.userData.coat = { species, sex, fur };
+    m.userData.extraAttrs = ['aRegion', 'aCut'];
     this.mats.set(k, m);
     return m;
   }
@@ -111,8 +241,8 @@ export class AnimalFactory {
     return { bones, byName, worldPos: wp };
   }
 
-  // Crée la représentation 3D d'un individu
-  create(ind) {
+  // Crée la représentation 3D d'un individu (detail : bois en haute définition, fourrure)
+  create(ind, opts = {}) {
     const spec = SPECIES[ind.species];
     const holder = new THREE.Group();
     const inner = new THREE.Group(); // échelle de l'individu
@@ -148,7 +278,7 @@ export class AnimalFactory {
     // Trophée
     let trophyMesh = null;
     if (ind.trophy && (ind.sex === 'm' || ind.species === 'chamois')) {
-      const g = buildTrophyGeometry(ind.trophy, spec, 1);
+      const g = buildTrophyGeometry(ind.trophy, spec, 1, { detail: !!opts.detail });
       if (g) {
         trophyMesh = new THREE.Mesh(g, this.antlerMat);
         trophyMesh.position.set(-hw.x, -hw.y, -hw.z);
@@ -157,10 +287,22 @@ export class AnimalFactory {
       }
     }
     const animator = new Animator(sk, spec, ind.scale);
-    return { holder, inner, lods, skeleton, bones: sk.byName, worldPos: sk.worldPos, animator, trophyMesh, spec };
+    const vis = { holder, inner, lods, skeleton, bones: sk.byName, worldPos: sk.worldPos, animator, trophyMesh, spec, ind, shells: null };
+    if (opts.fur) this.addShells(vis);
+    return vis;
   }
 
-  setLod(vis, lod) {
+  // Niveau de détail ; la fourrure n'apparaît que de près (d en mètres)
+  setLod(vis, lod, d = 0) {
     vis.lods.forEach((m, i) => (m.visible = i === lod));
+    const fur = lod === 0 && d < 38;
+    if (fur && !vis.shells) this.addShells(vis);
+    if (vis.shells) for (const m of vis.shells) m.visible = fur;
+  }
+
+  // Libère ce qui est propre à l'individu (géométrie des bois, texture des os)
+  release(vis) {
+    if (vis.trophyMesh) vis.trophyMesh.geometry.dispose();
+    vis.skeleton.dispose();
   }
 }

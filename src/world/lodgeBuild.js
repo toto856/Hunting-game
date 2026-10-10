@@ -11,6 +11,8 @@ function attrsFor(mat) {
   if (mat.vertexColors) a.push('color');
   // Normales de pelage lues sur le second jeu de coordonnées
   if ((mat.normalMap && mat.normalMap.channel === 1) || (mat.map && mat.map.channel === 1)) a.push('uv1');
+  // Attributs propres à certains matériaux (perlures des bois, régions du pelage)
+  if (mat.userData && mat.userData.extraAttrs) for (const x of mat.userData.extraAttrs) if (!a.includes(x)) a.push(x);
   return a;
 }
 
@@ -22,7 +24,7 @@ function prep(geo, matrix, attrs) {
   for (const name of attrs) {
     if (g.attributes[name]) continue;
     const n = g.attributes.position.count;
-    const size = name === 'uv' || name === 'uv1' ? 2 : 3;
+    const size = name === 'uv' || name === 'uv1' ? 2 : name === 'aPearl' || name === 'aRegion' || name === 'aCut' ? 1 : 3;
     const arr = new Float32Array(n * size);
     if (name === 'color') arr.fill(1);
     g.setAttribute(name, new THREE.BufferAttribute(arr, size));

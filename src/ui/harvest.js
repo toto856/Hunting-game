@@ -38,7 +38,7 @@ export class HarvestView {
     floor.receiveShadow = true;
     this.scene.add(floor);
     // L'animal, debout en pose de présentation
-    const vis = hunt.factory.create(rec.ind);
+    const vis = hunt.factory.create(rec.ind, { detail: true, fur: true });
     this.vis = vis;
     vis.holder.position.set(0, 0, 0);
     vis.lods.forEach((m, i) => (m.visible = i === 0));
@@ -170,7 +170,7 @@ export class HarvestView {
     p.innerHTML = `
       <div class="hv-head">
         <div class="hv-kicker">${rec.speciesName}</div>
-        <h2>${rec.name}${rec.legendary ? ' <span class="legend-tag">Légendaire</span>' : ''}</h2>
+        <h2>${rec.title || rec.name}${rec.legendary ? ' <span class="legend-tag">Légendaire</span>' : ''}</h2>
       </div>
       <div class="hv-medal ${medalCls}">
         <div class="medal-disc"><span>${rec.trophy ? fmt.dec(rec.score, 1) : '—'}</span><em>${unit}</em></div>
@@ -205,6 +205,7 @@ export class HarvestView {
     this.xray = force ?? !this.xray;
     this.vis.lods[0].material = this.xray ? this.xrayMat : this.baseMat;
     this.inner.visible = this.xray;
+    for (const m of this.vis.shells || []) m.visible = !this.xray;
     const b = this.panel.querySelector('[data-a="xray"]');
     b.textContent = this.xray ? 'Vue normale' : 'Rayons X';
     audio.ui();
