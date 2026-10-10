@@ -35,3 +35,11 @@ Un simple rechercher/remplacer de `emilie.de-crepy@iadfrance.fr` suffit.
 Le formulaire d'estimation ouvre la messagerie du visiteur avec un message
 pré-rempli (aucun serveur requis). Pour un envoi direct, le brancher sur
 Formspree / Netlify Forms.
+
+## Deux fichiers
+- `index.html` — version autonome, à ouvrir en local ou à héberger (doctype + head complets).
+- `artifact.html` — même site adapté au format Artifact Claude (sans `<html>/<head>/<body>`,
+  avec mode sombre, boutons de copie et formulaire sans `mailto`), publié en page privée :
+  https://claude.ai/artifact/4XpYxJwCgBjo87cAbgmJsL
+
+L'adresse e-mail à corriger apparaît dans **les deux** fichiers.
