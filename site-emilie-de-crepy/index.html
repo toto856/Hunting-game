@@ -176,6 +176,8 @@ p{margin:0}
 }
 .visual{position:relative;aspect-ratio:3/2;max-width:100%;overflow:hidden}
 .visual .scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;display:block}
+.has-photo .vis-note{display:none}
 .badges{position:absolute;top:11px;left:11px;z-index:2;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .badge{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border-radius:999px;
   background:var(--badge-bg);color:var(--badge-fg);border:1px solid var(--badge-bd)}
@@ -459,7 +461,7 @@ a.v:hover{color:var(--accent)}
           <div><span class="dot"></span> Estimation gratuite</div>
         </div>
       </div>
-      <figure class="shot">
+      <figure class="shot" data-photo="photos/emilie-de-crepy.jpg" data-photo-alt="Portrait d'Émilie De Crépy">
         <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Illustration d'une demeure"><use href="#s-domaine" width="300" height="200"/></svg>
         <figcaption>Émilie De Crépy — conseillère immobilière indépendante, réseau iad France. Illustration.</figcaption>
       </figure>
@@ -559,7 +561,7 @@ a.v:hover{color:var(--accent)}
         <div class="track" id="track" tabindex="0" aria-label="Liste des biens, faites défiler horizontalement">
 
           <article class="bien" data-tags="prestige maison exclusivite" data-ref="Domaine de caractère de 1870 — Olivet (45160) — 1 650 000 €">
-            <div class="visual"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div>
+            <div class="visual" data-photo="photos/olivet-domaine-1870.jpg" data-photo-alt="Photo du bien"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div>
               <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-domaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
             <div class="body"><span class="city">Olivet (45160)</span><h3>Domaine de caractère de 1870</h3>
               <div class="specs"><span>313 m²</span><span>11 pièces</span><span>6 chambres</span><span>4 salles de bain</span><span>Terrain 13 392 m²</span><span>Piscine</span></div>
@@ -567,7 +569,7 @@ a.v:hover{color:var(--accent)}
           </article>
 
           <article class="bien" data-tags="prestige maison" data-ref="Vaste propriété en vallée de Chevreuse — Bullion (78830) — 1 290 000 €">
-            <div class="visual"><div class="badges"><span class="badge">Prestige</span></div>
+            <div class="visual" data-photo="photos/bullion-propriete.jpg" data-photo-alt="Photo du bien"><div class="badges"><span class="badge">Prestige</span></div>
               <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
             <div class="body"><span class="city">Bullion (78830)</span><h3>Vaste propriété en vallée de Chevreuse</h3>
               <div class="specs"><span>480 m²</span><span>Maison</span><span>Yvelines</span></div>
@@ -575,7 +577,7 @@ a.v:hover{color:var(--accent)}
           </article>
 
           <article class="bien" data-tags="prestige maison exclusivite" data-ref="Domaine de 60 hectares en Sologne — Lamotte-Beuvron (41600) — 1 166 000 €">
-            <div class="visual"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div>
+            <div class="visual" data-photo="photos/lamotte-beuvron-domaine.jpg" data-photo-alt="Photo du bien"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge">Prestige</span></div>
               <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-foret" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
             <div class="body"><span class="city">Lamotte-Beuvron (41600)</span><h3>Domaine de 60 hectares au cœur de la Sologne</h3>
               <div class="specs"><span>280 m²</span><span>10 pièces</span><span>8 chambres</span><span>Terrain 60 ha</span></div>
@@ -583,7 +585,7 @@ a.v:hover{color:var(--accent)}
           </article>
 
           <article class="bien" data-tags="prestige maison" data-ref="Grande demeure aux portes d'Orléans — Saint-Jean-le-Blanc (45650) — 995 000 €">
-            <div class="visual"><div class="badges"><span class="badge">Prestige</span></div>
+            <div class="visual" data-photo="photos/saint-jean-le-blanc-demeure.jpg" data-photo-alt="Photo du bien"><div class="badges"><span class="badge">Prestige</span></div>
               <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-manoir" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
             <div class="body"><span class="city">Saint-Jean-le-Blanc (45650)</span><h3>Grande demeure aux portes d'Orléans</h3>
               <div class="specs"><span>490 m²</span><span>Maison</span><span>Loiret</span></div>
@@ -591,7 +593,7 @@ a.v:hover{color:var(--accent)}
           </article>
 
           <article class="bien" data-tags="prestige maison exclusivite" data-ref="Maison solognote de 310 m² — Saint-Viâtre (41210) — 627 000 €">
-            <div class="visual"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge cp">Sous compromis</span></div>
+            <div class="visual" data-photo="photos/saint-viatre-solognote.jpg" data-photo-alt="Photo du bien"><div class="badges"><span class="badge ex">Exclusivité</span><span class="badge cp">Sous compromis</span></div>
               <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-solognote" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
             <div class="body"><span class="city">Saint-Viâtre (41210)</span><h3>Maison solognote de 310 m²</h3>
               <div class="specs"><span>310 m²</span><span>Maison</span><span>Sologne</span></div>
@@ -599,7 +601,7 @@ a.v:hover{color:var(--accent)}
           </article>
 
           <article class="bien" data-tags="prestige maison" data-ref="Maison familiale au bord du Loiret — Olivet (45160) — 570 000 €">
-            <div class="visual"><div class="badges"><span class="badge">Prestige</span></div>
+            <div class="visual" data-photo="photos/olivet-maison-familiale.jpg" data-photo-alt="Photo du bien"><div class="badges"><span class="badge">Prestige</span></div>
               <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-maison" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
             <div class="body"><span class="city">Olivet (45160)</span><h3>Maison familiale au bord du Loiret</h3>
               <div class="specs"><span>184 m²</span><span>Maison</span><span>Olivet</span></div>
@@ -607,7 +609,7 @@ a.v:hover{color:var(--accent)}
           </article>
 
           <article class="bien" data-tags="maison exclusivite" data-ref="Maison contemporaine de 178 m² — Saint-Cyr-en-Val (45590) — 495 000 €">
-            <div class="visual"><div class="badges"><span class="badge ex">Exclusivité</span></div>
+            <div class="visual" data-photo="photos/saint-cyr-en-val-contemporaine.jpg" data-photo-alt="Photo du bien"><div class="badges"><span class="badge ex">Exclusivité</span></div>
               <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-contemporaine" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
             <div class="body"><span class="city">Saint-Cyr-en-Val (45590)</span><h3>Maison contemporaine de 178 m²</h3>
               <div class="specs"><span>178 m²</span><span>Maison</span><span>Loiret</span></div>
@@ -615,7 +617,7 @@ a.v:hover{color:var(--accent)}
           </article>
 
           <article class="bien" data-tags="appartement" data-ref="Deux-pièces en cœur de ville — Orléans (45000) — 118 000 €">
-            <div class="visual"><div class="badges"><span class="badge">Appartement</span></div>
+            <div class="visual" data-photo="photos/orleans-t2.jpg" data-photo-alt="Photo du bien"><div class="badges"><span class="badge">Appartement</span></div>
               <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
             <div class="body"><span class="city">Orléans (45000)</span><h3>Deux-pièces en cœur de ville</h3>
               <div class="specs"><span>41 m²</span><span>2 pièces</span><span>1 chambre</span></div>
@@ -623,7 +625,7 @@ a.v:hover{color:var(--accent)}
           </article>
 
           <article class="bien" data-tags="appartement" data-ref="Trois-pièces lumineux — Olivet (45160) — 99 700 €">
-            <div class="visual"><div class="badges"><span class="badge">Appartement</span></div>
+            <div class="visual" data-photo="photos/olivet-t3.jpg" data-photo-alt="Photo du bien"><div class="badges"><span class="badge">Appartement</span></div>
               <svg class="scene" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration"><use href="#s-immeuble" width="300" height="200"/></svg><span class="vis-note">Illustration</span></div>
             <div class="body"><span class="city">Olivet (45160)</span><h3>Trois-pièces lumineux</h3>
               <div class="specs"><span>58 m²</span><span>3 pièces</span><span>2 chambres</span></div>
@@ -825,6 +827,25 @@ a.v:hover{color:var(--accent)}
     msg.value = "Je souhaite recevoir le dossier complet du bien suivant : " + ref + ".";
     show("estimation");
     setTimeout(function(){ document.getElementById("nom").focus(); }, 380);
+  });
+
+
+  /* ---------- photos réelles : déposées dans photos/, elles remplacent les illustrations ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-photo]"), function(holder){
+    var src = holder.dataset.photo;
+    if (!src) return;
+    var probe = new Image();
+    probe.onload = function(){
+      var img = document.createElement("img");
+      img.className = "photo";
+      img.src = src;
+      img.alt = holder.dataset.photoAlt || "";
+      holder.insertBefore(img, holder.firstChild);
+      holder.classList.add("has-photo");
+      var scene = holder.querySelector(".scene");
+      if (scene) scene.remove();
+    };
+    probe.src = src;
   });
 
   /* ---------- copie ---------- */

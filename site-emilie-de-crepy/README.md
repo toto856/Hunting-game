@@ -39,9 +39,9 @@ Un simple rechercher/remplacer de `emilie.de-crepy@iadfrance.fr` suffit.
   `--paper` (fond), `--ink` (texte).
 - **Ajouter un bien** : dupliquer un bloc `<article class="bien" data-tags="...">`.
   Tags disponibles : `prestige`, `maison`, `appartement`, `exclusivite`.
-- **Photos** : dans chaque carte, remplacer le bloc
-  `<svg class="scene" …>…</svg><span class="vis-note">Illustration</span>` par
-  `<img src="photos/mon-bien.jpg" alt="…" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`.
+- **Photos** : rien à coder. Déposer les fichiers dans `photos/` avec les noms listés
+  dans `photos/A-LIRE.txt` ; chaque photo trouvée remplace automatiquement l'illustration
+  (et la pastille « Illustration » disparaît). Un fichier absent laisse l'illustration.
   Les illustrations sont définies une seule fois dans le sprite SVG (`#s-domaine`, `#s-manoir`,
   `#s-foret`, `#s-solognote`, `#s-maison`, `#s-contemporaine`, `#s-immeuble`).
 

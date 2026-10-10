@@ -1,0 +1,17 @@
+Déposez ici les photos, avec exactement ces noms (.jpg) :
+
+  emilie-de-crepy.jpg              portrait (format portrait, ~4:5)
+  olivet-domaine-1870.jpg          Domaine de caractère de 1870 — Olivet, 1 650 000 €
+  bullion-propriete.jpg            Vaste propriété — Bullion (78830), 1 290 000 €
+  lamotte-beuvron-domaine.jpg      Domaine 60 ha en Sologne — Lamotte-Beuvron, 1 166 000 €
+  saint-jean-le-blanc-demeure.jpg  Grande demeure — Saint-Jean-le-Blanc, 995 000 €
+  saint-viatre-solognote.jpg       Maison solognote — Saint-Viâtre, 627 000 €
+  olivet-maison-familiale.jpg      Maison familiale — Olivet, 570 000 €
+  saint-cyr-en-val-contemporaine.jpg  Maison contemporaine — Saint-Cyr-en-Val, 495 000 €
+  orleans-t2.jpg                   Deux-pièces — Orléans, 118 000 €
+  olivet-t3.jpg                    Trois-pièces — Olivet, 99 700 €
+
+Les vignettes sont en 3:2 (recadrage automatique, object-fit: cover).
+Aucune modification du code n'est nécessaire : si le fichier existe, la photo
+remplace l'illustration et la pastille « Illustration » disparaît. S'il manque,
+l'illustration reste affichée.
