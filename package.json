@@ -1,0 +1,15 @@
+{
+  "name": "hautevallee",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Domaine de Hautevallée — jeu de chasse 3D réaliste (grand gibier européen et gibier d'eau) dans le navigateur.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10",
+    "three": "0.170.0"
+  }
+}
