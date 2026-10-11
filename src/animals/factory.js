@@ -124,7 +124,7 @@ export class AnimalFactory {
     this.shellMats = new Map();
     // Nombre de coques de fourrure selon la qualité (0 : pas de fourrure)
     const q = engine.q;
-    this.shellN = !q.fur ? 0 : q.shadowSize >= 4096 ? 12 : q.shadowSize >= 2048 && q.post ? 10 : 6;
+    this.shellN = !q.fur ? 0 : q.furShells || 6;
   }
 
   // Matériau d'une coque de fourrure (k : hauteur relative, ou null pour la version instanciée)

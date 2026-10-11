@@ -29,7 +29,19 @@ export const PRESETS = {
     texSize: 1024, grassRadius: 58, grassDensity: 4.4, treeNear: 120, treeMid: 420, viewDist: 1100,
     terrainLod: [150, 380, 760], animalsFull: 240, reflections: true, post: true, fur: true, maxAnimals: 110,
   },
+  // Ultra Max : tout au maximum (feuillage le plus détaillé, ombres et herbe très lointaines) — ordinateurs puissants
+  ultramax: {
+    label: 'Ultra Max', pixelRatio: 2.0, antialias: true, shadowSize: 4096, shadowDist: 150,
+    texSize: 2048, grassRadius: 80, grassDensity: 5.6, treeNear: 180, treeMid: 560, viewDist: 1400,
+    terrainLod: [190, 460, 900], animalsFull: 320, reflections: true, post: true, fur: true, maxAnimals: 130,
+    ultramax: true,
+  },
 };
+// Niveau de détail du feuillage (0 : simple, 1 : normal, 2 : maximal) et nombre de coques de fourrure
+for (const [k, p] of Object.entries(PRESETS)) {
+  p.foliage = k === 'ultramax' ? 2 : k === 'bas' ? 0 : 1;
+  p.furShells = { bas: 0, moyen: 6, eleve: 8, ultra: 12, ultramax: 16 }[k];
+}
 
 export function defaultQuality() {
   if (isPhone) return 'moyen';

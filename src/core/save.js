@@ -16,8 +16,16 @@ const defaults = () => ({
   trophies: [], // { id, species, sex, score, medal, weight, fur, trophy, date, dist, organs, quality, weapon, legendary }
   stats: { shots: 0, hits: 0, kills: {}, longest: 0, sessions: 0, ethical: 0, unethical: 0, fines: 0, ducks: 0 },
   options: { sens: 1, touchSens: 1, invertY: false, volume: 0.8, music: 0.4, quality: null, fov: 72, aimToggle: false, hints: true, birdSpeed: 1 },
-  last: { mode: 'gros', hour: 7.5, weather: 'clair', stand: 'lodge' },
+  last: { mode: 'gros', hour: 7.5, weather: 'clair', stand: 'lodge', region: 'france', density: 'normale' },
   rewards: [], // objets gagnés grâce aux trophées (déjà notifiés)
+  // ---- v3
+  wear: {}, // tenue portée : emplacement (tete, haut, veste, bas, pieds, mains, gilet) -> id d'article
+  backpack: [], // ids des équipements emportés dans le sac à dos
+  dogs: [], // chiens possédés : { id, breed, name }
+  lodge: { level: 0, rooms: {} }, // 0 abri, 1 pavillon, 2 grand domaine ; niveau de chaque pièce
+  regions: ['france'], // destinations de chasse débloquées
+  account: null, // { email, id } : compte du joueur (progression retrouvée sur un autre appareil)
+  day: 0, // jours écoulés (nuits passées à la chambre)
 });
 
 let state = defaults();
@@ -28,16 +36,21 @@ let writing = false;
 const listeners = new Set();
 
 function merge(base, d) {
+  const old = !('lodge' in d) && (d.trophies || d.owned); // sauvegarde antérieure aux améliorations du pavillon
   const out = Object.assign(base, d);
   const def = defaults();
-  out.loadout = Object.assign(def.loadout, d.loadout || {});
-  out.stats = Object.assign(def.stats, d.stats || {});
-  out.options = Object.assign(def.options, d.options || {});
-  out.last = Object.assign(def.last, d.last || {});
+  // Objets simples : valeurs par défaut complétées par la sauvegarde
+  for (const k of ['loadout', 'stats', 'options', 'last', 'wear', 'lodge']) out[k] = Object.assign(def[k], d[k] || {});
+  out.lodge.rooms = Object.assign({}, (d.lodge && d.lodge.rooms) || {});
   out.scopes = d.scopes || {};
   out.skins = d.skins || {};
   out.trophies = d.trophies || [];
   out.rewards = d.rewards || [];
+  out.backpack = d.backpack || [];
+  out.dogs = d.dogs || [];
+  out.regions = d.regions || def.regions;
+  // Les joueurs qui avaient déjà le pavillon le gardent
+  if (old) out.lodge.level = Math.max(out.lodge.level, 1);
   for (const id of def.owned) if (!out.owned.includes(id)) out.owned.push(id);
   return out;
 }
