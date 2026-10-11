@@ -1,0 +1,12 @@
+import { execSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import path from 'node:path';
+const root = execSync('npm root -g').toString().trim();
+const { chromium } = await import(pathToFileURL(path.join(root, 'playwright', 'index.mjs')).href);
+const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const page = await browser.newPage({ viewport: { width: 640, height: 360 } });
+page.on('console', (m) => console.log(`[${m.type()}] ${m.text().slice(0, 3000)}`));
+page.on('pageerror', (e) => console.log(`[pageerror] ${e.message}`));
+await page.goto(pathToFileURL(path.resolve(process.argv[2])).href + '?' + process.argv[3]);
+await page.waitForTimeout(+process.argv[4] || 60000);
+await browser.close();
