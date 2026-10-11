@@ -45,6 +45,7 @@ function mkIR(c, kind) {
 
 export class AudioEngine {
   constructor() {
+    this.extraAnimal = {};
     this.ready = false;
     this.vol = 0.8;
     this.listener = { pos: new THREE.Vector3(), fwd: new THREE.Vector3(0, 0, -1) };
@@ -296,10 +297,14 @@ export class AudioEngine {
   }
 
   // ---------------------------------------------------------------- gibier
+  // Cris propres aux espèces ajoutées ailleurs : fn(audio, dest, t, kind)
+  registerAnimal(species, fn) { this.extraAnimal[species] = fn; }
+
   animal(species, kind, pos) {
     if (!this.ready) return;
     const t = this.now + this.listener.pos.distanceTo(pos) / 343;
     const d = this.spatial(pos, 1.2, 0.5);
+    if (this.extraAnimal[species]) return this.extraAnimal[species](this, d, t, kind);
     if (kind === 'roar' && species === 'cerf') return this.roar(d, t);
     if (kind === 'alarm' || kind === 'flee') {
       if (species === 'chevreuil') {
