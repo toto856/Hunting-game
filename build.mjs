@@ -2,7 +2,7 @@
 //   index.html          : document complet (s'ouvre directement depuis le disque)
 //   dist/artifact.html  : même page sans squelette <html>/<head>/<body> (publication Claude)
 import { build, context } from 'esbuild';
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 
 const watch = process.argv.includes('--watch');
 const dev = process.argv.includes('--dev');
@@ -11,7 +11,9 @@ const LICENSE = '<!-- Domaine de Hautevallée. Moteur 3D : three.js r170 — MIT
 
 function assemble(js) {
   const head = readFileSync('src/page/head.html', 'utf8');
-  const css = readFileSync('src/page/style.css', 'utf8');
+  // Feuille principale puis feuilles propres à chaque écran (src/page/*.css, ordre alphabétique)
+  const extra = readdirSync('src/page').filter((f) => f.endsWith('.css') && f !== 'style.css').sort();
+  const css = [readFileSync('src/page/style.css', 'utf8'), ...extra.map((f) => readFileSync('src/page/' + f, 'utf8'))].join('\n');
   const body = readFileSync('src/page/body.html', 'utf8');
   const safeJs = js.replace(/<\/script/gi, '<\\/script');
   const content =
