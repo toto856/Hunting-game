@@ -73,6 +73,16 @@ export class Player {
     // ---- Déplacement
     const ax = input.axes();
     let mx = ax.x, mz = ax.y;
+    // Pousser le joystick (ou avancer) depuis un mirador : on en descend
+    if (this.seat && this.seat.stand && !ads && Math.hypot(ax.x, ax.y) > 0.6) {
+      this.leaveT = (this.leaveT || 0) + dt;
+      if (this.leaveT > 0.45) {
+        const f = this.seat.stand.foot;
+        this.seat = null;
+        this.pos.set(f.x, this.world.groundAt(f.x, f.z), f.z);
+        this.leaveT = 0;
+      }
+    } else this.leaveT = 0;
     if (this.frozen || this.seat) { mx = 0; mz = 0; }
     const touchRun = input.move.touchMag > 0.95;
     this.sprinting = (input.down('shift') || touchRun) && !ads && mz > 0.3 && this.stance === 'stand' && this.stamina > 0.05;

@@ -12,7 +12,7 @@ try { pw = await import('playwright'); } catch (e) {
 const { chromium, devices } = pw;
 const [query = 'test=hunt&q=bas', prefix = '.shots/touch'] = process.argv.slice(2);
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] });
-const ctx = await browser.newContext({ ...devices['iPhone 13 landscape'], deviceScaleFactor: 1 });
+const ctx = await browser.newContext({ ...devices[process.env.PORTRAIT === '1' ? 'iPhone 13' : 'iPhone 13 landscape'], deviceScaleFactor: 1 });
 const page = await ctx.newPage();
 const logs = [];
 page.on('console', (m) => logs.push(`[${m.type()}] ${m.text()}`));
